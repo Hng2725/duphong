@@ -9,27 +9,41 @@ import './styles.css';
 
 const App: React.FC = () => {
   const [loggedIn, setLoggedIn] = useState(false);
-  const [page, setPage] = useState('login');
+  const [page, setPage] = useState('dashboard'); // Default to dashboard page
+  const [currentUser, setCurrentUser] = useState<string | undefined>(undefined);
 
+  const handleLogin = (username: string) => {
+    setLoggedIn(true);
+    setCurrentUser(username);
+    setPage('dashboard'); // Redirect to dashboard after login
+  };
+
+  const handleLogout = () => {
+    setLoggedIn(false);
+    setCurrentUser(undefined);
+    setPage('dashboard'); // Redirect to dashboard after logout
+  };
+
+  // If not logged in, show dashboard which will display login/register options
   if (!loggedIn) {
-    return page === 'login' ? (
-      <Login setLoggedIn={setLoggedIn} setPage={setPage} />
-    ) : (
-      <Register setLoggedIn={setLoggedIn} setPage={setPage} />
-    );
+    return <Dashboard setPage={setPage} currentUser={currentUser} />;
   }
 
+  // For logged in users, show the requested page
   switch (page) {
     case 'dashboard':
-      return <Dashboard setPage={setPage} />;
+      return <Dashboard setPage={setPage} currentUser={currentUser} />;
     case 'apply':
       return <ApplicationForm setPage={setPage} />;
     case 'status':
       return <ApplicationStatus setPage={setPage} />;
     case 'results':
       return <Results setPage={setPage} />;
+    case 'logout':
+      handleLogout();
+      return <Dashboard setPage={setPage} currentUser={undefined} />;
     default:
-      return <Dashboard setPage={setPage} />;
+      return <Dashboard setPage={setPage} currentUser={currentUser} />;
   }
 };
 

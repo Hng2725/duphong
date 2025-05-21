@@ -104,3 +104,112 @@ input[type="tel"] {
   margin-top: 4px;
   display: block;
 }
+/* Desktop-only Styles */
+.desktop-container {
+  width: 100%;
+  min-width: 1200px;
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto auto 1fr auto;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Header Styles */
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 40px;
+  height: 80px;
+  background-color: #1a365d;
+  color: white;
+}
+
+.header-left .logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.user-greeting {
+  font-weight: 500;
+}
+
+.logout-btn {
+  background: none;
+  border: 1px solid white;
+  color: white;
+  padding: 5px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.logout-btn:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.auth-buttons {
+  display: flex;
+  gap: 15px;
+}
+
+.login-btn, .register-btn {
+  padding: 8px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.login-btn {
+  background: white;
+  color: #1a365d;
+  border: none;
+}
+
+.register-btn {
+  background: #f6ad55;
+  color: white;
+  border: none;
+}
+/* Navigation Styles */
+.main-nav {
+  display: flex;
+  background-color: #2c5282;
+  padding: 0 40px;
+}
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 15px 25px;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.nav-btn:hover {
+  background-color: #4299e1;
+}
+
+.nav-btn.active {
+  background-color: #3182ce;
+  font-weight: 500;
+}

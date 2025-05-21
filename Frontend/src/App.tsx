@@ -1,49 +1,56 @@
-import React, { useState } from 'react';
-import Login from './components/auth/Login';
-import Register from './components/auth/Register';
-import Dashboard from './pages/Dashboard';
-import ApplicationForm from './components/application/ApplicationForm';
-import ApplicationStatus from './components/application/ApplicationStatus';
-import Results from './components/application/Results';
-import './styles.css';
+import React, { useState, useEffect } from "react";
+import Login from "./components/auth/Login";
+import Register from "./components/auth/Register";
+import Dashboard from "./pages/Dashboard";
+import ApplicationForm from "./components/application/ApplicationForm";
+import ApplicationStatus from "./components/application/ApplicationStatus";
+import Results from "./components/application/Results";
+import "./styles.css";
 
 const App: React.FC = () => {
-  const [loggedIn, setLoggedIn] = useState(false);
-  const [page, setPage] = useState('dashboard'); // Default to dashboard page
-  const [currentUser, setCurrentUser] = useState<string | undefined>(undefined);
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
+  const [page, setPage] = useState("dashboard");
 
-  const handleLogin = (username: string) => {
-    setLoggedIn(true);
-    setCurrentUser(username);
-    setPage('dashboard'); // Redirect to dashboard after login
-  };
+  useEffect(() => {
+    const user = localStorage.getItem("currentUser");
+    if (user) {
+      setCurrentUser(user);
+    }
+  }, []);
 
-  const handleLogout = () => {
-    setLoggedIn(false);
-    setCurrentUser(undefined);
-    setPage('dashboard'); // Redirect to dashboard after logout
-  };
+  useEffect(() => {
+    if (page === "logout") {
+      setCurrentUser(null);
+      localStorage.removeItem("currentUser");
+      setPage("dashboard");
+    }
+  }, [page]);
 
-  // If not logged in, show dashboard which will display login/register options
-  if (!loggedIn) {
-    return <Dashboard setPage={setPage} currentUser={currentUser} />;
+  const protectedPages = ["apply", "status", "results"];
+
+  if (protectedPages.includes(page) && currentUser === null) {
+    return <Login setCurrentUser={setCurrentUser} setPage={setPage} />;
   }
 
-  // For logged in users, show the requested page
+  if (currentUser === null && page === "register") {
+    return <Register setCurrentUser={setCurrentUser} setPage={setPage} />;
+  }
+
   switch (page) {
-    case 'dashboard':
-      return <Dashboard setPage={setPage} currentUser={currentUser} />;
-    case 'apply':
-      return <ApplicationForm setPage={setPage} />;
-    case 'status':
-      return <ApplicationStatus setPage={setPage} />;
-    case 'results':
-      return <Results setPage={setPage} />;
-    case 'logout':
-      handleLogout();
-      return <Dashboard setPage={setPage} currentUser={undefined} />;
+    case "dashboard":
+      return <Dashboard currentUser={currentUser} setPage={setPage} />;
+    case "apply":
+      return <ApplicationForm setPage={setPage} currentUser={currentUser} />;
+    case "status":
+      return <ApplicationStatus setPage={setPage} currentUser={currentUser} />;
+    case "results":
+      return <Results setPage={setPage} currentUser={currentUser} />;
+    case "login":
+      return <Login setCurrentUser={setCurrentUser} setPage={setPage} />;
+    case "register":
+      return <Register setCurrentUser={setCurrentUser} setPage={setPage} />;
     default:
-      return <Dashboard setPage={setPage} currentUser={currentUser} />;
+      return <Dashboard currentUser={currentUser} setPage={setPage} />;
   }
 };
 

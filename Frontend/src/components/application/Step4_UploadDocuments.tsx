@@ -1,6 +1,6 @@
-// src/components/application/Step4_UploadDocuments.tsx
 import React from 'react';
 import { FormData } from '../../types';
+import CommonLayout from './CommonLayout';
 import '../../styles.css';
 
 interface Step4Props {
@@ -8,9 +8,18 @@ interface Step4Props {
   setFormData: React.Dispatch<React.SetStateAction<FormData>>;
   nextStep: () => void;
   prevStep: () => void;
+  setPage: (page: string) => void;
+  currentUser?: string | null | undefined;
 }
 
-const Step4_UploadDocuments: React.FC<Step4Props> = ({ formData, setFormData, nextStep, prevStep }) => {
+const Step4_UploadDocuments: React.FC<Step4Props> = ({ 
+  formData, 
+  setFormData, 
+  nextStep, 
+  prevStep,
+  setPage,
+  currentUser
+}) => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newDocuments = Array.from(e.target.files);
@@ -19,6 +28,7 @@ const Step4_UploadDocuments: React.FC<Step4Props> = ({ formData, setFormData, ne
   };
 
   return (
+  <CommonLayout setPage={setPage} currentUser={currentUser} activePage="apply">
     <div className="form-step">
       <h2>Tải lên minh chứng</h2>
       <div className="form-group">
@@ -40,6 +50,7 @@ const Step4_UploadDocuments: React.FC<Step4Props> = ({ formData, setFormData, ne
         <button className="next-button" onClick={nextStep}>Tiếp theo</button>
       </div>
     </div>
+  </CommonLayout>
   );
 };
 

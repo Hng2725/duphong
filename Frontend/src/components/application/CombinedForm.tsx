@@ -1,14 +1,22 @@
 import React, { useState } from 'react';
 import { FormData } from '../../types';
+import CommonLayout from './CommonLayout';
 import './CombinedForm.css';
 
 interface CombinedFormProps {
   setFormData: React.Dispatch<React.SetStateAction<FormData>>;
   nextStep: () => void;
+  setPage: (page: string) => void;
+  currentUser?: string | null | undefined;
 }
 
-const CombinedForm: React.FC<CombinedFormProps> = ({ setFormData, nextStep }) => {
-  const [localData, setLocalData] = useState<FormData>({
+const CombinedForm: React.FC<CombinedFormProps> = ({ 
+  setFormData, 
+  nextStep, 
+  setPage, 
+  currentUser 
+}) => {
+const [localData, setLocalData] = useState<FormData>({
     school: '',
     major: '',
     examCombination: '',
@@ -79,6 +87,7 @@ const CombinedForm: React.FC<CombinedFormProps> = ({ setFormData, nextStep }) =>
   };
 
   return (
+  <CommonLayout setPage={setPage} currentUser={currentUser} activePage="apply">
     <form className="combined-form" onSubmit={handleSubmit}>
       <h2>Đăng ký xét tuyển</h2>
 
@@ -210,6 +219,7 @@ const CombinedForm: React.FC<CombinedFormProps> = ({ setFormData, nextStep }) =>
         Tiếp theo
       </button>
     </form>
+  </CommonLayout>
   );
 };
 

@@ -1,26 +1,38 @@
 // src/components/application/ApplicationForm.tsx
 // chuyển hướng đi lên xuốngxuống
-import React, { useState } from 'react';
-import { FormData } from '../../types';
-import CombinedForm from './CombinedForm';
-import Step4_UploadDocuments from './Step4_UploadDocuments';
-import Step5_ReviewAndSubmit from './Step5_ReviewAndSubmit';
-import '../../styles.css';
+import React, { useState } from "react";
+import { FormData } from "../../types";
+import CombinedForm from "./CombinedForm";
+import Step4_UploadDocuments from "./Step4_UploadDocuments";
+import Step5_ReviewAndSubmit from "./Step5_ReviewAndSubmit";
+import "../../styles.css";
 
 interface ApplicationFormProps {
   setPage: (page: string) => void;
+  currentUser: string | null;
 }
 
-const ApplicationForm: React.FC<ApplicationFormProps> = ({ setPage }) => {
+const ApplicationForm: React.FC<ApplicationFormProps> = ({
+  setPage,
+  currentUser,
+}) => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
-    school: '',
-    major: '',
-    examCombination: '',
-    personalInfo: { name: '', dateOfBirth: '', address: '' , phone:'', cccd:'', ethnicity:'', gender:''},
+    school: "",
+    major: "",
+    examCombination: "",
+    personalInfo: {
+      name: "",
+      dateOfBirth: "",
+      address: "",
+      phone: "",
+      cccd: "",
+      ethnicity: "",
+      gender: "",
+    },
     scores: {},
     priorityCategories: [],
-    documents: []
+    documents: [],
   });
 
   const nextStep = () => setStep(step + 1);
@@ -28,13 +40,13 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ setPage }) => {
 
   const handleFormSubmit = async () => {
     try {
-      console.log('Đang gửi hồ sơ:', formData);
+      console.log("Đang gửi hồ sơ:", formData);
       // Giả lập gửi dữ liệu đến server, thay bằng API thực tế nếu cần
       // Ví dụ: await api.submitApplication(formData);
-      console.log('Hồ sơ đã được gửi thành công');
-      setPage('status');
+      console.log("Hồ sơ đã được gửi thành công");
+      setPage("status");
     } catch (error) {
-      console.error('Lỗi khi gửi hồ sơ:', error);
+      console.error("Lỗi khi gửi hồ sơ:", error);
       // Có thể thêm thông báo lỗi cho người dùng nếu cần
     }
   };
@@ -42,7 +54,14 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ setPage }) => {
   const renderStep = () => {
     switch (step) {
       case 1:
-        return <CombinedForm setFormData={setFormData} nextStep={nextStep} />;
+        return (
+          <CombinedForm
+            setFormData={setFormData}
+            nextStep={nextStep}
+            setPage={setPage}
+            currentUser={currentUser}
+          />
+        );
       case 2:
         return (
           <Step4_UploadDocuments
@@ -50,6 +69,8 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ setPage }) => {
             setFormData={setFormData}
             nextStep={nextStep}
             prevStep={prevStep}
+            setPage={setPage}
+            currentUser={currentUser}
           />
         );
       case 3:
@@ -58,6 +79,8 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ setPage }) => {
             formData={formData}
             prevStep={prevStep}
             submitForm={handleFormSubmit}
+            setPage={setPage}
+            currentUser={currentUser}
           />
         );
       default:
@@ -65,11 +88,7 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({ setPage }) => {
     }
   };
 
-  return (
-    <div className="application-form">
-      {renderStep()}
-    </div>
-  );
+  return <div className="application-form">{renderStep()}</div>;
 };
 
 export default ApplicationForm;

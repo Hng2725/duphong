@@ -1,4 +1,23 @@
-.login-container, .register-container, .form-step, .status-container, .results-container, .dashboard-container {
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+}
+
+button {
+  font-family: inherit;
+}
+
+.login-container,
+.register-container,
+.form-step,
+.status-container,
+.results-container,
+.dashboard-container {
   max-width: 400px;
   margin: 50px auto;
   padding: 20px;
@@ -7,7 +26,12 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.login-container h2, .register-container h2, .form-step h2, .status-container h2, .results-container h2, .dashboard-container h2 {
+.login-container h2,
+.register-container h2,
+.form-step h2,
+.status-container h2,
+.results-container h2,
+.dashboard-container h2 {
   text-align: center;
   margin-bottom: 20px;
   font-size: 24px;
@@ -25,7 +49,8 @@
   color: #555;
 }
 
-.form-group input, .form-group select {
+.form-group input,
+.form-group select {
   width: 100%;
   padding: 10px;
   border: 1px solid #ccc;
@@ -33,13 +58,20 @@
   font-size: 16px;
 }
 
-.form-group input:focus, .form-group select:focus {
+.form-group input:focus,
+.form-group select:focus {
   outline: none;
   border-color: #007bff;
   box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
 }
 
-.login-button, .register-button, .next-button, .prev-button, .submit-button, .action-button, .back-button {
+.login-button,
+.register-button,
+.next-button,
+.prev-button,
+.submit-button,
+.action-button,
+.back-button {
   width: 100%;
   padding: 10px;
   background-color: #007bff;
@@ -51,23 +83,32 @@
   margin-top: 10px;
 }
 
-.login-button:hover, .register-button:hover, .next-button:hover, .prev-button:hover, .submit-button:hover, .action-button:hover, .back-button:hover {
+.login-button:hover,
+.register-button:hover,
+.next-button:hover,
+.prev-button:hover,
+.submit-button:hover,
+.action-button:hover,
+.back-button:hover {
   background-color: #0056b3;
 }
 
-.register-link, .login-link {
+.register-link,
+.login-link {
   text-align: center;
   margin-top: 15px;
   font-size: 14px;
 }
 
-.register-link a, .login-link a {
+.register-link a,
+.login-link a {
   color: #007bff;
   text-decoration: none;
   cursor: pointer;
 }
 
-.register-link a:hover, .login-link a:hover {
+.register-link a:hover,
+.login-link a:hover {
   text-decoration: underline;
 }
 
@@ -84,4 +125,260 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+/* Layout styles */
+.desktop-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f5f5f5;
+}
+
+.app-header {
+  background-color: #ffffff;
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-left .logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #007bff;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-greeting {
+  font-size: 1rem;
+  color: #333;
+}
+
+.logout-btn,
+.login-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s;
+}
+
+.logout-btn {
+  background-color: #dc3545;
+  color: white;
+}
+
+.login-btn {
+  background-color: #007bff;
+  color: white;
+}
+
+.logout-btn:hover {
+  background-color: #c82333;
+}
+
+.login-btn:hover {
+  background-color: #0056b3;
+}
+
+.main-nav {
+  background-color: #ffffff;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.nav-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  background: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: color 0.3s;
+}
+
+.nav-btn:hover {
+  color: #ffffff;
+}
+
+.nav-btn.active {
+  color: #fafafa;
+  font-weight: bold;
+}
+
+.icon {
+  font-size: 1.2rem;
+}
+
+.content-area {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.app-footer {
+  background-color: #333;
+  color: white;
+  padding: 2rem;
+  margin-top: auto;
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-around;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 1rem;
+}
+
+.footer-section {
+  flex: 1;
+  max-width: 300px;
+}
+
+.footer-section h3 {
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+}
+
+.footer-section p {
+  margin: 0.5rem 0;
+  color: #ccc;
+}
+
+.copyright {
+  text-align: center;
+  padding-top: 1rem;
+  border-top: 1px solid #555;
+  color: #999;
+}
+
+/* News Section Styles */
+.news-section {
+  padding: 2rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  margin: 2rem 0;
+}
+
+.news-section h2 {
+  color: #2c3e50;
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  position: relative;
+}
+
+.news-section h2:after {
+  content: "";
+  display: block;
+  width: 60px;
+  height: 3px;
+  background: #007bff;
+  margin: 10px auto;
+}
+
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  padding: 1rem 0;
+}
+
+.news-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  border: 1px solid #eaeaea;
+  position: relative;
+  overflow: hidden;
+}
+
+.news-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  border-color: #007bff;
+}
+
+.news-card:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: #007bff;
+  transform: scaleY(0);
+  transition: transform 0.3s ease;
+}
+
+.news-card:hover:before {
+  transform: scaleY(1);
+}
+
+.news-card h3 {
+  color: #2c3e50;
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  padding-left: 0.5rem;
+  transition: color 0.3s ease;
+}
+
+.news-card:hover h3 {
+  color: #007bff;
+}
+
+.news-card p {
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  padding-left: 0.5rem;
+}
+
+.news-card .read-more {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 500;
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding-left: 0.5rem;
+}
+
+.news-card .read-more:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .news-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .news-section {
+    padding: 1rem;
+  }
 }

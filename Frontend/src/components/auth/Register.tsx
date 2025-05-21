@@ -2,19 +2,18 @@ import React, { useState } from 'react';
 import './auth.css';
 
 interface RegisterProps {
-  setLoggedIn: (value: boolean) => void;
+  setCurrentUser: (user: string) => void;
   setPage: (page: string) => void;
 }
 
-const Register: React.FC<RegisterProps> = ({ setLoggedIn, setPage }) => {
+const Register: React.FC<RegisterProps> = ({ setCurrentUser, setPage }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const handleRegister = () => {
-    // Giả lập đăng ký thành công (thay bằng gọi API thực tế)
     if (username && password && password === confirmPassword) {
-      setLoggedIn(true);
+      setCurrentUser(username);
       setPage('dashboard');
     } else if (password !== confirmPassword) {
       alert('Mật khẩu xác nhận không khớp');

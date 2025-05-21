@@ -1,23 +1,21 @@
 import React, { useState, useEffect } from 'react';
-// Import Ant Design components and styles
-import { notification, Button, Input, Space } from 'antd';
+import { notification, Button, Input } from 'antd';
 import './auth.css';
 
 interface LoginProps {
-  setLoggedIn: (value: boolean) => void;
+  setCurrentUser: (user: string) => void;
   setPage: (page: string) => void;
 }
 
-const Login: React.FC<LoginProps> = ({ setLoggedIn, setPage }) => {
+const Login: React.FC<LoginProps> = ({ setCurrentUser, setPage }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [api, contextHolder] = notification.useNotification();
 
   useEffect(() => {
-    // Hiển thị thông báo khi component mount
     api.info({
       message: 'Thông báo',
-      description: 'Hệ thống  bảo trì từ 19h00 đến 22h00 ',
+      description: 'Hệ thống bảo trì từ 19h00 đến 22h00',
       placement: 'topRight',
       duration: 5,
     });
@@ -25,7 +23,7 @@ const Login: React.FC<LoginProps> = ({ setLoggedIn, setPage }) => {
 
   const handleLogin = () => {
     if (username && password) {
-      setLoggedIn(true);
+      setCurrentUser(username); // Thiết lập currentUser
       setPage('dashboard');
     } else {
       api.warning({
@@ -38,11 +36,17 @@ const Login: React.FC<LoginProps> = ({ setLoggedIn, setPage }) => {
   };
 
   return (
-    <div className="auth-page">
-      {/* Notification context holder */}
+    <div
+      className="auth-page"
+      style={{
+        backgroundImage: "url('/images/backroud.jpg')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+      }}
+    >
       {contextHolder}
       <div className="auth-content">
-        {/* Column trái: Form đăng nhập */}
         <div className="login-container">
           <h2>Đăng nhập</h2>
           <div className="form-group">
@@ -67,12 +71,7 @@ const Login: React.FC<LoginProps> = ({ setLoggedIn, setPage }) => {
               placeholder="Nhập mật khẩu"
             />
           </div>
-          <Button
-            type="primary"
-            block
-            size="large"
-            onClick={handleLogin}
-          >
+          <Button type="primary" block size="large" onClick={handleLogin}>
             Đăng nhập
           </Button>
           <p className="register-link">
@@ -80,9 +79,6 @@ const Login: React.FC<LoginProps> = ({ setLoggedIn, setPage }) => {
             <a onClick={() => setPage('register')}>Đăng ký ngay</a>
           </p>
         </div>
-
-        {/* Column phải: Thông báo tĩnh */}
-       
       </div>
     </div>
   );

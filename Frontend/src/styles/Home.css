@@ -39,6 +39,7 @@
 
 .user-greeting {
   font-weight: 500;
+  color: white;
 }
 
 .logout-btn {
@@ -47,7 +48,7 @@
   color: white;
   padding: 5px 15px;
   border-radius: 4px;
-  cursor: pointer;
+  cursor: pointer;  
   transition: all 0.3s;
 }
 

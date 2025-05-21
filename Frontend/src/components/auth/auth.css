@@ -1,0 +1,147 @@
+/* auth.css - giao diện login và thông báo */
+
+/* Reset cơ bản */
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  background: linear-gradient(135deg, #e3f2fd 0%, #f1e3e3 100%);
+}
+
+/* Wrapper auth-page */
+.auth-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Background sách mở CSS-only */
+.auth-page::before,
+.auth-page::after {
+  content: '';
+  position: absolute;
+  top: 5%; bottom: 5%;
+  width: 40%;
+  background: #8fcafb;
+  border-radius: 4px;
+  z-index: 1;
+}
+.auth-page::before {
+  left: 0;
+  clip-path: polygon(0 0, 100% 10%, 100% 90%, 0 100%);
+  transform: translateX(-10%) rotate(2deg);
+  opacity: 0.4;
+}
+.auth-page::after {
+  right: 0;
+  clip-path: polygon(0 10%, 100% 0, 100% 100%, 0 90%);
+  transform: translateX(10%) rotate(-2deg);
+  opacity: 0.4;
+}
+
+/* Layout 2 cột */
+.auth-content {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  width: 800px;
+  max-width: 90%;
+  z-index: 2;
+}
+
+/* Form login */
+.login-container {
+  flex: 1;
+  margin-right: 40px;
+  padding: 32px;
+  background: rgba(254, 254, 255, 0.9);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+.login-container h2 {
+  margin-bottom: 24px;
+  font-size: 24px;
+  font-weight: 600;
+  color: #0033a0;
+}
+.form-group {
+  margin-bottom: 20px;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+}
+.form-group input {
+  width: 100%;
+  padding: 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  transition: border-color 0.2s;
+}
+.form-group input:focus {
+  border-color: #0033a0;
+  outline: none;
+}
+.login-button {
+  width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #0033a0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.login-button:hover {
+  background-color: #002080;
+}
+.register-link {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 14px;
+  color: #555;
+}
+.register-link a {
+  color: #0033a0;
+  text-decoration: none;
+  font-weight: 500;
+}
+.register-link a:hover {
+  text-decoration: underline;
+}
+
+/* Notification panel bên phải */
+.notification {
+  flex: 1;
+  padding: 32px;
+  background: rgba(255,255,255,0.9);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+.notification h2 {
+  margin: 0 0 16px;
+  font-size: 22px;
+  font-weight: 600;
+  color: #1a237e;
+}
+.notification p {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #333;
+}
+
+/* Đảm bảo notification Ant Design hiện nổi bật */
+.ant-notification {
+  z-index: 1000;
+}

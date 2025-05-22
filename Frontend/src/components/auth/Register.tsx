@@ -26,12 +26,12 @@ const Register: React.FC<RegisterProps> = ({ setCurrentUser, setPage }) => {
     <div className="register-container">
       <h2>Đăng ký</h2>
       <div className="form-group">
-        <label>Tên đăng nhập</label>
+        <label>Tên tài khoản</label>
         <input
           type="text"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          placeholder="Nhập tên đăng nhập"
+          placeholder="Vui lòng nhập tên tài khoản"
         />
       </div>
       <div className="form-group">

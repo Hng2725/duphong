@@ -23,7 +23,9 @@ const [localData, setLocalData] = useState<FormData>({
     personalInfo: { name: '', dateOfBirth: '', address: '', phone: '', cccd: '', ethnicity: '', gender: '' },
     scores: {},
     priorityCategories: [],
-    documents: []
+    documents: [],
+    documents2: [],
+    documents3: []
   });
 
   const [errors, setErrors] = useState<{ cccd?: string; phone?: string }>({}); // State để lưu lỗi

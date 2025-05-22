@@ -33,21 +33,25 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({
     scores: {},
     priorityCategories: [],
     documents: [],
+    documents2: [],
+    documents3: [],
   });
 
   const nextStep = () => setStep(step + 1);
   const prevStep = () => setStep(step - 1);
 
-  const handleFormSubmit = async () => {
+  const handleFormSubmit = async (): Promise<{ status: string }> => {
     try {
       console.log("Đang gửi hồ sơ:", formData);
       // Giả lập gửi dữ liệu đến server, thay bằng API thực tế nếu cần
       // Ví dụ: await api.submitApplication(formData);
       console.log("Hồ sơ đã được gửi thành công");
       setPage("status");
+      return { status: "success" };
     } catch (error) {
       console.error("Lỗi khi gửi hồ sơ:", error);
       // Có thể thêm thông báo lỗi cho người dùng nếu cần
+      return { status: "error" };
     }
   };
 
@@ -80,8 +84,9 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({
             prevStep={prevStep}
             submitForm={handleFormSubmit}
             setPage={setPage}
-            currentUser={currentUser}
-          />
+            currentUser={currentUser} setApplicationData={function (data: FormData & { status: string; }): void {
+              throw new Error("Function not implemented.");
+            } }          />
         );
       default:
         return null;

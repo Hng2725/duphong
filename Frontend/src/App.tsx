@@ -42,7 +42,7 @@ const App: React.FC = () => {
     case "apply":
       return <ApplicationForm setPage={setPage} currentUser={currentUser} />;
     case "status":
-      return <ApplicationStatus setPage={setPage} currentUser={currentUser} />;
+      return <ApplicationStatus setPage={setPage} currentUser={currentUser} applications={[]} />;
     case "results":
       return <Results setPage={setPage} currentUser={currentUser} />;
     case "login":

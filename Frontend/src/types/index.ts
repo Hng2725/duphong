@@ -16,4 +16,6 @@ export interface FormData {
   };
   priorityCategories: string[];
   documents: File[];
+  documents2: File[];
+  documents3: File[];
 }

@@ -1,16 +1,12 @@
 import React from "react";
 import "../../styles.css";
 import { FormData } from "../../types";
-
-type PageType = "dashboard" | "application-status" | string;
+import CommonLayout from "./CommonLayout";
 
 interface ApplicationStatusProps {
-  setPage: (page: PageType) => void;
-  currentUser: string | null;
-  applications: (FormData & { 
-    status: "Chờ duyệt" | "Đã duyệt" | "Từ chối";
-    submissionDate: string;
-  })[];
+  setPage: (page: string) => void;
+  currentUser?: string | null | undefined;
+  applications: FormData[];
 }
 
 const ApplicationStatus: React.FC<ApplicationStatusProps> = ({
@@ -18,87 +14,148 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({
   currentUser,
   applications,
 }) => {
-  const handleBackClick = () => {
-    try {
-      setPage("dashboard");
-    } catch (error) {
-      console.error("Error navigating back to dashboard:", error);
-    }
-  };
+  // Add status and submission date if not present
+  const applicationsWithStatus = applications.map((app) => ({
+    ...app,
+    status: app.status || "Chờ duyệt",
+    submissionDate: app.submissionDate || new Date().toLocaleDateString(),
+  }));
 
-  const getStatusClass = (status: string) => {
-    switch (status) {
-      case "Đã duyệt":
-        return "status-approved";
-      case "Từ chối":
-        return "status-rejected";
+  const getStatusMessage = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "chờ duyệt":
+        return "Hồ sơ của bạn đang được xét duyệt. Thời gian xét duyệt thông thường từ 3-5 ngày làm việc.";
+      case "đã duyệt":
+        return "Chúc mừng! Hồ sơ của bạn đã được chấp nhận.";
+      case "từ chối":
+        return "Rất tiếc, hồ sơ của bạn không được chấp nhận. Vui lòng liên hệ với chúng tôi để biết thêm chi tiết.";
       default:
-        return "status-pending";
+        return "";
     }
   };
 
   return (
-    <div className="status-container">
-      <h2 className="status-title">Danh sách hồ sơ đã gửi</h2>
-      
-      {applications.length === 0 ? (
-        <div className="no-applications">
-          <p>Bạn chưa gửi hồ sơ nào</p>
-        </div>
-      ) : (
-        <div className="applications-list">
-          {applications.map((application, index) => (
-            <div key={index} className="application-card">
-              <div className="application-header">
-                <h3>Hồ sơ #{index + 1}</h3>
-                <span className={`status-badge ${getStatusClass(application.status)}`}>
-                  {application.status}
-                </span>
-              </div>
-              
-              <div className="application-details">
+    <CommonLayout
+      setPage={setPage}
+      currentUser={currentUser}
+      activePage="status"
+    >
+      <div className="status-container">
+        <h2>Trạng thái hồ sơ</h2>
+        {applicationsWithStatus.length === 0 ? (
+          <div className="no-applications">
+            <p>Bạn chưa có hồ sơ xét tuyển nào.</p>
+            <button onClick={() => setPage("apply")} className="action-button">
+              Đăng ký xét tuyển
+            </button>
+          </div>
+        ) : (
+          <div className="applications-list">
+            {applicationsWithStatus.map((application, index) => (
+              <div key={index} className="application-card">
+                <div className="application-header">
+                  <h3>{application.school}</h3>
+                  <span
+                    className={`status-badge status-${application.status.toLowerCase().replace(" ", "-")}`}
+                  >
+                    {application.status}
+                  </span>
+                </div>
+
+                <div className="status-message">
+                  <p>{getStatusMessage(application.status)}</p>
+                </div>
+
                 <div className="detail-section">
                   <h4>Thông tin cá nhân</h4>
-                  <p><strong>Họ tên:</strong> {application.personalInfo.name}</p>
-                  <p><strong>Ngày sinh:</strong> {application.personalInfo.dateOfBirth}</p>
-                  <p><strong>CCCD:</strong> {application.personalInfo.cccd}</p>
+                  <div className="info-grid">
+                    <p>
+                      <strong>Họ tên:</strong> {application.personalInfo.name}
+                    </p>
+                    <p>
+                      <strong>CCCD:</strong> {application.personalInfo.cccd}
+                    </p>
+                    <p>
+                      <strong>Ngày sinh:</strong>{" "}
+                      {application.personalInfo.dateOfBirth}
+                    </p>
+                    <p>
+                      <strong>Giới tính:</strong>{" "}
+                      {application.personalInfo.gender}
+                    </p>
+                  </div>
                 </div>
-                
+
                 <div className="detail-section">
-                  <h4>Thông tin học vấn</h4>
-                  <p><strong>Trường:</strong> {application.school}</p>
-                  <p><strong>Ngành:</strong> {application.major}</p>
-                  <p><strong>Tổ hợp:</strong> {application.examCombination}</p>
+                  <h4>Thông tin đăng ký</h4>
+                  <div className="info-grid">
+                    <p>
+                      <strong>Ngành:</strong> {application.major}
+                    </p>
+                    {application.examCombination && (
+                      <p>
+                        <strong>Tổ hợp xét tuyển:</strong>{" "}
+                        {application.examCombination}
+                      </p>
+                    )}
+                    {application.transcriptScores && (
+                      <p>
+                        <strong>Hình thức:</strong> Xét tuyển học bạ
+                      </p>
+                    )}
+                    {!application.transcriptScores && (
+                      <p>
+                        <strong>Hình thức:</strong> Xét tuyển điểm thi
+                      </p>
+                    )}
+                  </div>
                 </div>
-                
+
                 <div className="detail-section">
-                  <h4>Minh chứng</h4>
-                  <ul className="documents-list">
-                    {application.documents.map((doc, i) => (
-                      <li key={`doc1-${i}`}>{doc.name}</li>
-                    ))}
-                    {application.documents2.map((doc, i) => (
-                      <li key={`doc2-${i}`}>{doc.name}</li>
-                    ))}
-                    {application.documents3.map((doc, i) => (
-                      <li key={`doc3-${i}`}>{doc.name}</li>
-                    ))}
-                  </ul>
+                  <h4>Điểm xét tuyển</h4>
+                  <div className="info-grid">
+                    {application.transcriptScores ? (
+                      <>
+                        <p>
+                          <strong>Học kỳ 1 - Lớp 12:</strong>
+                        </p>
+                        {Object.entries(
+                          application.transcriptScores.semester1Grade12
+                        ).map(([subject, score]) => (
+                          <p key={subject}>
+                            <strong>{subject}:</strong> {score}
+                          </p>
+                        ))}
+                      </>
+                    ) : (
+                      Object.entries(application.scores).map(
+                        ([subject, score]) => (
+                          <p key={subject}>
+                            <strong>{subject}:</strong> {score}
+                          </p>
+                        )
+                      )
+                    )}
+                  </div>
                 </div>
-                
+
                 <div className="submission-info">
-                  <p><strong>Ngày gửi:</strong> {application.submissionDate}</p>
+                  <p>
+                    <strong>Ngày nộp:</strong> {application.submissionDate}
+                  </p>
+                  <button
+                    onClick={() => setPage("results")}
+                    className="view-details-button"
+                  >
+                    Xem chi tiết
+                  </button>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
-      
-      <button className="back-button" onClick={handleBackClick}>
-        Quay lại trang chủ
-      </button>
-    </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </CommonLayout>
   );
 };
 

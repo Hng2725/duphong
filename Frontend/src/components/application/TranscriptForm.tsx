@@ -1,0 +1,689 @@
+import React, { useState } from "react";
+import { FormData, FormDataSetter, SemesterKey, SubjectKey } from "../../types";
+import CommonLayout from "./CommonLayout";
+import "../../styles/CombinedForm.css";
+
+interface TranscriptFormProps {
+  setPage: (page: string) => void;
+  currentUser?: string | null | undefined;
+  setFormData: FormDataSetter;
+  nextStep: () => void;
+}
+
+const TranscriptForm: React.FC<TranscriptFormProps> = ({
+  setFormData,
+  nextStep,
+  setPage,
+  currentUser,
+}) => {
+  const [localData, setLocalData] = useState<FormData>({
+    school: "",
+    major: "",
+    examCombination: "",
+    personalInfo: {
+      name: "",
+      dateOfBirth: "",
+      address: "",
+      phone: "",
+      cccd: "",
+      ethnicity: "",
+      gender: "",
+    },
+    scores: {},
+    transcriptScores: {
+      semester1Grade12: {
+        math: "",
+        literature: "",
+        english: "",
+        physics: "",
+        chemistry: "",
+        biology: "",
+      },
+      semester2Grade12: {
+        math: "",
+        literature: "",
+        english: "",
+        physics: "",
+        chemistry: "",
+        biology: "",
+      },
+      semester1Grade11: {
+        math: "",
+        literature: "",
+        english: "",
+        physics: "",
+        chemistry: "",
+        biology: "",
+      },
+      semester2Grade11: {
+        math: "",
+        literature: "",
+        english: "",
+        physics: "",
+        chemistry: "",
+        biology: "",
+      },
+    },
+    priorityCategories: [],
+    documents: [],
+    documents2: [],
+    documents3: [],
+    status: "Chờ duyệt",
+    submissionDate: new Date().toLocaleDateString(),
+  });
+
+  const [errors, setErrors] = useState<{ cccd?: string; phone?: string }>({});
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setLocalData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handlePersonalInfoChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    let updatedValue = value;
+
+    if (name === "cccd" || name === "phone") {
+      if (/\D/.test(value)) {
+        setErrors((prev) => ({ ...prev, [name]: " * Chỉ được nhập số" }));
+        updatedValue = value.replace(/\D/g, "");
+      } else {
+        setErrors((prev) => ({ ...prev, [name]: undefined }));
+      }
+    }
+
+    setLocalData((prev) => ({
+      ...prev,
+      personalInfo: { ...prev.personalInfo, [name]: updatedValue },
+    }));
+  };
+
+  const handleTranscriptScoreChange = (
+    semester: SemesterKey,
+    subject: SubjectKey,
+    value: string
+  ) => {
+    const score = parseFloat(value);
+    if (value === "" || (!isNaN(score) && score >= 0 && score <= 10)) {
+      setLocalData((prev) => ({
+        ...prev,
+        transcriptScores: {
+          ...prev.transcriptScores,
+          [semester]: {
+            ...prev.transcriptScores[semester],
+            [subject]: value,
+          },
+        },
+      }));
+    }
+  };
+
+  const handlePriorityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setLocalData((prev) => ({
+      ...prev,
+      priorityCategories: [e.target.value],
+    }));
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (e.currentTarget.checkValidity()) {
+      setFormData(localData);
+      nextStep();
+    }
+  };
+
+  return (
+    <CommonLayout
+      setPage={setPage}
+      currentUser={currentUser}
+      activePage="apply-transcript"
+    >
+      <form className="combined-form" onSubmit={handleSubmit}>
+        <h2>Đăng ký xét tuyển học bạ</h2>
+
+        {/* Thông tin cá nhân */}
+        <div className="form-section">
+          <h3>A. Thông tin cá nhân</h3>
+          <input
+            type="text"
+            name="name"
+            placeholder="Họ tên"
+            value={localData.personalInfo.name}
+            onChange={handlePersonalInfoChange}
+            required
+          />
+          <select
+            name="gender"
+            value={localData.personalInfo.gender}
+            onChange={handlePersonalInfoChange}
+            required
+          >
+            <option value="">Chọn giới tính</option>
+            <option value="Nam">Nam</option>
+            <option value="Nữ">Nữ</option>
+          </select>
+          <input
+            type="date"
+            name="dateOfBirth"
+            value={localData.personalInfo.dateOfBirth}
+            onChange={handlePersonalInfoChange}
+            required
+          />
+          <input
+            type="text"
+            name="address"
+            placeholder="Địa chỉ"
+            value={localData.personalInfo.address}
+            onChange={handlePersonalInfoChange}
+            required
+          />
+          <div className="input-wrapper">
+            <input
+              type="tel"
+              name="phone"
+              placeholder="Số điện thoại"
+              value={localData.personalInfo.phone}
+              onChange={handlePersonalInfoChange}
+              pattern="\d{10}"
+              title="Vui lòng nhập 10 chữ số"
+              maxLength={10}
+              required
+            />
+            {errors.phone && <span className="error-text">{errors.phone}</span>}
+          </div>
+          <div className="input-wrapper">
+            <input
+              type="text"
+              name="cccd"
+              placeholder="Số CCCD"
+              value={localData.personalInfo.cccd}
+              onChange={handlePersonalInfoChange}
+              pattern="\d{12}"
+              title="Vui lòng nhập 12 chữ số"
+              maxLength={12}
+              required
+            />
+            {errors.cccd && <span className="error-text">{errors.cccd}</span>}
+          </div>
+          <input
+            type="text"
+            name="ethnicity"
+            placeholder="Dân tộc"
+            value={localData.personalInfo.ethnicity}
+            onChange={handlePersonalInfoChange}
+            required
+          />
+        </div>
+
+        {/* Chọn trường và ngành */}
+        <div className="form-section">
+          <h3>B. Chọn trường và ngành</h3>
+          <select
+            name="school"
+            value={localData.school}
+            onChange={handleInputChange}
+            required
+          >
+            <option value="">Chọn trường</option>
+            <option value="Trường A">Trường A</option>
+            <option value="Trường B">Trường B</option>
+            <option value="Trường C">Trường C</option>
+          </select>
+          <select
+            name="major"
+            value={localData.major}
+            onChange={handleInputChange}
+            required
+          >
+            <option value="">Chọn ngành</option>
+            <option value="Ngành X">Ngành X</option>
+            <option value="Ngành Y">Ngành Y</option>
+            <option value="Ngành Z">Ngành Z</option>
+          </select>
+        </div>
+
+        {/* Điểm học bạ */}
+        <div className="form-section">
+          <h3>C. Điểm học bạ</h3>
+
+          {/* Lớp 12 - Học kỳ 1 */}
+          <div className="semester-section">
+            <h4>Lớp 12 - Học kỳ 1</h4>
+            <div className="grades-grid">
+              <input
+                type="number"
+                placeholder="Điểm Toán"
+                value={localData.transcriptScores.semester1Grade12.math}
+                min="0"
+                max="10"
+                step="0.1"
+                onChange={(e) =>
+                  handleTranscriptScoreChange(
+                    "semester1Grade12",
+                    "math",
+                    e.target.value
+                  )
+                }
+                required
+              />
+              <input
+                type="number"
+                placeholder="Điểm Văn"
+                value={localData.transcriptScores.semester1Grade12.literature}
+                min="0"
+                max="10"
+                step="0.1"
+                onChange={(e) =>
+                  handleTranscriptScoreChange(
+                    "semester1Grade12",
+                    "literature",
+                    e.target.value
+                  )
+                }
+                required
+              />
+              <input
+                type="number"
+                placeholder="Điểm Anh"
+                value={localData.transcriptScores.semester1Grade12.english}
+                min="0"
+                max="10"
+                step="0.1"
+                onChange={(e) =>
+                  handleTranscriptScoreChange(
+                    "semester1Grade12",
+                    "english",
+                    e.target.value
+                  )
+                }
+                required
+              />
+              <input
+                type="number"
+                placeholder="Điểm Lý"
+                value={localData.transcriptScores.semester1Grade12.physics}
+                min="0"
+                max="10"
+                step="0.1"
+                onChange={(e) =>
+                  handleTranscriptScoreChange(
+                    "semester1Grade12",
+                    "physics",
+                    e.target.value
+                  )
+                }
+                required
+              />
+              <input
+                type="number"
+                placeholder="Điểm Hóa"
+                value={localData.transcriptScores.semester1Grade12.chemistry}
+                min="0"
+                max="10"
+                step="0.1"
+                onChange={(e) =>
+                  handleTranscriptScoreChange(
+                    "semester1Grade12",
+                    "chemistry",
+                    e.target.value
+                  )
+                }
+                required
+              />
+              <input
+                type="number"
+                placeholder="Điểm Sinh"
+                value={localData.transcriptScores.semester1Grade12.biology}
+                min="0"
+                max="10"
+                step="0.1"
+                onChange={(e) =>
+                  handleTranscriptScoreChange(
+                    "semester1Grade12",
+                    "biology",
+                    e.target.value
+                  )
+                }
+                required
+              />
+            </div>
+          </div>
+
+          {/* Lớp 12 - Học kỳ 2 */}
+          <div className="semester-section">
+            <h4>Lớp 12 - Học kỳ 2</h4>
+            <div className="grades-grid">
+              <input
+                type="number"
+                placeholder="Điểm Toán"
+                value={localData.transcriptScores.semester2Grade12.math}
+                min="0"
+                max="10"
+                step="0.1"
+                onChange={(e) =>
+                  handleTranscriptScoreChange(
+                    "semester2Grade12",
+                    "math",
+                    e.target.value
+                  )
+                }
+                required
+              />
+              <input
+                type="number"
+                placeholder="Điểm Văn"
+                value={localData.transcriptScores.semester2Grade12.literature}
+                min="0"
+                max="10"
+                step="0.1"
+                onChange={(e) =>
+                  handleTranscriptScoreChange(
+                    "semester2Grade12",
+                    "literature",
+                    e.target.value
+                  )
+                }
+                required
+              />
+              <input
+                type="number"
+                placeholder="Điểm Anh"
+                value={localData.transcriptScores.semester2Grade12.english}
+                min="0"
+                max="10"
+                step="0.1"
+                onChange={(e) =>
+                  handleTranscriptScoreChange(
+                    "semester2Grade12",
+                    "english",
+                    e.target.value
+                  )
+                }
+                required
+              />
+              <input
+                type="number"
+                placeholder="Điểm Lý"
+                value={localData.transcriptScores.semester2Grade12.physics}
+                min="0"
+                max="10"
+                step="0.1"
+                onChange={(e) =>
+                  handleTranscriptScoreChange(
+                    "semester2Grade12",
+                    "physics",
+                    e.target.value
+                  )
+                }
+                required
+              />
+              <input
+                type="number"
+                placeholder="Điểm Hóa"
+                value={localData.transcriptScores.semester2Grade12.chemistry}
+                min="0"
+                max="10"
+                step="0.1"
+                onChange={(e) =>
+                  handleTranscriptScoreChange(
+                    "semester2Grade12",
+                    "chemistry",
+                    e.target.value
+                  )
+                }
+                required
+              />
+              <input
+                type="number"
+                placeholder="Điểm Sinh"
+                value={localData.transcriptScores.semester2Grade12.biology}
+                min="0"
+                max="10"
+                step="0.1"
+                onChange={(e) =>
+                  handleTranscriptScoreChange(
+                    "semester2Grade12",
+                    "biology",
+                    e.target.value
+                  )
+                }
+                required
+              />
+            </div>
+          </div>
+
+          {/* Lớp 11 - Học kỳ 1 */}
+          <div className="semester-section">
+            <h4>Lớp 11 - Học kỳ 1</h4>
+            <div className="grades-grid">
+              <input
+                type="number"
+                placeholder="Điểm Toán"
+                value={localData.transcriptScores.semester1Grade11.math}
+                min="0"
+                max="10"
+                step="0.1"
+                onChange={(e) =>
+                  handleTranscriptScoreChange(
+                    "semester1Grade11",
+                    "math",
+                    e.target.value
+                  )
+                }
+                required
+              />
+              <input
+                type="number"
+                placeholder="Điểm Văn"
+                value={localData.transcriptScores.semester1Grade11.literature}
+                min="0"
+                max="10"
+                step="0.1"
+                onChange={(e) =>
+                  handleTranscriptScoreChange(
+                    "semester1Grade11",
+                    "literature",
+                    e.target.value
+                  )
+                }
+                required
+              />
+              <input
+                type="number"
+                placeholder="Điểm Anh"
+                value={localData.transcriptScores.semester1Grade11.english}
+                min="0"
+                max="10"
+                step="0.1"
+                onChange={(e) =>
+                  handleTranscriptScoreChange(
+                    "semester1Grade11",
+                    "english",
+                    e.target.value
+                  )
+                }
+                required
+              />
+              <input
+                type="number"
+                placeholder="Điểm Lý"
+                value={localData.transcriptScores.semester1Grade11.physics}
+                min="0"
+                max="10"
+                step="0.1"
+                onChange={(e) =>
+                  handleTranscriptScoreChange(
+                    "semester1Grade11",
+                    "physics",
+                    e.target.value
+                  )
+                }
+                required
+              />
+              <input
+                type="number"
+                placeholder="Điểm Hóa"
+                value={localData.transcriptScores.semester1Grade11.chemistry}
+                min="0"
+                max="10"
+                step="0.1"
+                onChange={(e) =>
+                  handleTranscriptScoreChange(
+                    "semester1Grade11",
+                    "chemistry",
+                    e.target.value
+                  )
+                }
+                required
+              />
+              <input
+                type="number"
+                placeholder="Điểm Sinh"
+                value={localData.transcriptScores.semester1Grade11.biology}
+                min="0"
+                max="10"
+                step="0.1"
+                onChange={(e) =>
+                  handleTranscriptScoreChange(
+                    "semester1Grade11",
+                    "biology",
+                    e.target.value
+                  )
+                }
+                required
+              />
+            </div>
+          </div>
+
+          {/* Lớp 11 - Học kỳ 2 */}
+          <div className="semester-section">
+            <h4>Lớp 11 - Học kỳ 2</h4>
+            <div className="grades-grid">
+              <input
+                type="number"
+                placeholder="Điểm Toán"
+                value={localData.transcriptScores.semester2Grade11.math}
+                min="0"
+                max="10"
+                step="0.1"
+                onChange={(e) =>
+                  handleTranscriptScoreChange(
+                    "semester2Grade11",
+                    "math",
+                    e.target.value
+                  )
+                }
+                required
+              />
+              <input
+                type="number"
+                placeholder="Điểm Văn"
+                value={localData.transcriptScores.semester2Grade11.literature}
+                min="0"
+                max="10"
+                step="0.1"
+                onChange={(e) =>
+                  handleTranscriptScoreChange(
+                    "semester2Grade11",
+                    "literature",
+                    e.target.value
+                  )
+                }
+                required
+              />
+              <input
+                type="number"
+                placeholder="Điểm Anh"
+                value={localData.transcriptScores.semester2Grade11.english}
+                min="0"
+                max="10"
+                step="0.1"
+                onChange={(e) =>
+                  handleTranscriptScoreChange(
+                    "semester2Grade11",
+                    "english",
+                    e.target.value
+                  )
+                }
+                required
+              />
+              <input
+                type="number"
+                placeholder="Điểm Lý"
+                value={localData.transcriptScores.semester2Grade11.physics}
+                min="0"
+                max="10"
+                step="0.1"
+                onChange={(e) =>
+                  handleTranscriptScoreChange(
+                    "semester2Grade11",
+                    "physics",
+                    e.target.value
+                  )
+                }
+                required
+              />
+              <input
+                type="number"
+                placeholder="Điểm Hóa"
+                value={localData.transcriptScores.semester2Grade11.chemistry}
+                min="0"
+                max="10"
+                step="0.1"
+                onChange={(e) =>
+                  handleTranscriptScoreChange(
+                    "semester2Grade11",
+                    "chemistry",
+                    e.target.value
+                  )
+                }
+                required
+              />
+              <input
+                type="number"
+                placeholder="Điểm Sinh"
+                value={localData.transcriptScores.semester2Grade11.biology}
+                min="0"
+                max="10"
+                step="0.1"
+                onChange={(e) =>
+                  handleTranscriptScoreChange(
+                    "semester2Grade11",
+                    "biology",
+                    e.target.value
+                  )
+                }
+                required
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Đối tượng ưu tiên */}
+        <div className="form-section">
+          <h3>D. Đối tượng ưu tiên</h3>
+          <select onChange={handlePriorityChange} required>
+            <option value="">Chọn đối tượng</option>
+            <option value="Ưu tiên 1">Ưu tiên 1</option>
+            <option value="Ưu tiên 2">Ưu tiên 2</option>
+            <option value="Không ưu tiên">Không ưu tiên</option>
+          </select>
+        </div>
+
+        <button type="submit" className="next-button">
+          Tiếp theo
+        </button>
+      </form>
+    </CommonLayout>
+  );
+};
+
+export default TranscriptForm;

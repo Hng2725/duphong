@@ -1,83 +1,74 @@
-import React, { useState, useEffect } from 'react';
-import { notification, Button, Input } from 'antd';
-import './auth.css';
+import React, { useState } from "react";
+import "../../styles.css";
 
 interface LoginProps {
   setCurrentUser: (user: string) => void;
   setPage: (page: string) => void;
+  setIsAdmin?: (isAdmin: boolean) => void;
 }
 
-const Login: React.FC<LoginProps> = ({ setCurrentUser, setPage }) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [api, contextHolder] = notification.useNotification();
+const Login: React.FC<LoginProps> = ({
+  setCurrentUser,
+  setPage,
+  setIsAdmin,
+}) => {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    api.info({
-      message: 'Thông báo',
-      description: 'Hệ thống bảo trì từ 19h00 đến 22h00',
-      placement: 'topRight',
-      duration: 5,
-    });
-  }, [api]);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
 
-  const handleLogin = () => {
+    // Kiểm tra tài khoản admin
+    if (username === "admin" && password === "123") {
+      setCurrentUser("admin");
+      setIsAdmin && setIsAdmin(true);
+      setPage("admin-dashboard");
+      return;
+    }
+
+    // Xử lý đăng nhập cho người dùng thông thường
     if (username && password) {
-      setCurrentUser(username); // Thiết lập currentUser
-      setPage('dashboard');
+      setCurrentUser(username);
+      setIsAdmin && setIsAdmin(false);
+      setPage("dashboard");
+      localStorage.setItem("currentUser", username);
     } else {
-      api.warning({
-        message: 'Lỗi đăng nhập',
-        description: 'Vui lòng nhập đầy đủ tài khoản và mật khẩu',
-        placement: 'topRight',
-        duration: 3,
-      });
+      setError("Vui lòng nhập đầy đủ thông tin!");
     }
   };
 
   return (
-    <div
-      className="auth-page"
-      style={{
-        backgroundImage: "url('/images/backroud.jpg')",
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-      }}
-    >
-      {contextHolder}
-      <div className="auth-content">
-        <div className="login-container">
-          <h2>Đăng nhập</h2>
+    <div className="auth-wrapper">
+      <div className="login-container">
+        <h2>Đăng nhập</h2>
+        <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>
-              Số CCCD/CMND/ĐDCN <span className="required">*</span>
-            </label>
-            <Input
-              size="large"
+            <label htmlFor="username">Tên đăng nhập:</label>
+            <input
+              type="text"
+              id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Nhập số CCCD/CMND/ĐDCN"
             />
           </div>
           <div className="form-group">
-            <label>
-              Mật khẩu <span className="required">*</span>
-            </label>
-            <Input.Password
-              size="large"
+            <label htmlFor="password">Mật khẩu:</label>
+            <input
+              type="password"
+              id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Nhập mật khẩu"
             />
           </div>
-          <Button type="primary" block size="large" onClick={handleLogin}>
+          {error && <div className="error-message">{error}</div>}
+          <button type="submit" className="login-button">
             Đăng nhập
-          </Button>
-          <p className="register-link">
-            Chưa có tài khoản?{' '}
-            <a onClick={() => setPage('register')}>Đăng ký ngay</a>
-          </p>
+          </button>
+        </form>
+        <div className="register-link">
+          Chưa có tài khoản?{" "}
+          <a onClick={() => setPage("register")}>Đăng ký ngay</a>
         </div>
       </div>
     </div>

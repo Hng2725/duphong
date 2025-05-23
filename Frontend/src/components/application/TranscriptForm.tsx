@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FormData, FormDataSetter, SemesterKey, SubjectKey } from "../../types";
 import CommonLayout from "./CommonLayout";
+import { useUniversity } from "../../contexts/UniversityContext";
 import "../../styles/CombinedForm.css";
 
 interface TranscriptFormProps {
@@ -16,6 +17,8 @@ const TranscriptForm: React.FC<TranscriptFormProps> = ({
   setPage,
   currentUser,
 }) => {
+  const { universities } = useUniversity();
+  const [selectedSchool, setSelectedSchool] = useState("");
   const [localData, setLocalData] = useState<FormData>({
     school: "",
     major: "",
@@ -78,11 +81,26 @@ const TranscriptForm: React.FC<TranscriptFormProps> = ({
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setLocalData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    if (name === "school") {
+      setSelectedSchool(value);
+      setLocalData((prev) => ({
+        ...prev,
+        school: value,
+        major: "", // Reset major when school changes
+      }));
+    } else {
+      setLocalData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
+
+  // Get the selected university's majors
+  const selectedUniversity = universities.find(
+    (uni) => uni.name === selectedSchool
+  );
+  const availableMajors = selectedUniversity?.majors || [];
 
   const handlePersonalInfoChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -233,20 +251,26 @@ const TranscriptForm: React.FC<TranscriptFormProps> = ({
             required
           >
             <option value="">Chọn trường</option>
-            <option value="Trường A">Trường A</option>
-            <option value="Trường B">Trường B</option>
-            <option value="Trường C">Trường C</option>
+            {universities.map((uni) => (
+              <option key={uni.id} value={uni.name}>
+                {uni.name}
+              </option>
+            ))}
           </select>
+
           <select
             name="major"
             value={localData.major}
             onChange={handleInputChange}
             required
+            disabled={!selectedSchool} // Disable if no school is selected
           >
             <option value="">Chọn ngành</option>
-            <option value="Ngành X">Ngành X</option>
-            <option value="Ngành Y">Ngành Y</option>
-            <option value="Ngành Z">Ngành Z</option>
+            {availableMajors.map((major) => (
+              <option key={major} value={major}>
+                {major}
+              </option>
+            ))}
           </select>
         </div>
 

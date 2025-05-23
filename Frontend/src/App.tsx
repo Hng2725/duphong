@@ -9,6 +9,7 @@ import ExamResults from "./pages/ExamResults";
 import GuideRegistration from "./components/application/GuideRegistration";
 import TranscriptForm from "./components/application/TranscriptForm";
 import AdminDashboard from "./pages/AdminDashboard";
+import { UniversityProvider } from "./contexts/UniversityContext";
 import { FormData, FormDataSetter } from "./types";
 import "./styles.css";
 
@@ -109,11 +110,11 @@ const App: React.FC = () => {
         submissionDate: new Date().toLocaleDateString(),
         personalInfo: {
           ...formData.personalInfo,
-          name: currentUser,
+          name: currentUser || formData.personalInfo.name,
         },
       };
       setFormData(updatedFormData);
-      setAllApplications([...allApplications, updatedFormData]);
+      setAllApplications((prev) => [...prev, updatedFormData]);
       setPage("status");
     }
   };
@@ -137,20 +138,6 @@ const App: React.FC = () => {
     "dashboard",
   ];
 
-  if (protectedPages.includes(page) && currentUser === null) {
-    return (
-      <Login
-        setCurrentUser={setCurrentUser}
-        setPage={setPage}
-        setIsAdmin={setIsAdmin}
-      />
-    );
-  }
-
-  if (currentUser === null && page === "register") {
-    return <Register setCurrentUser={setCurrentUser} setPage={setPage} />;
-  }
-
   const handleSetFormData: FormDataSetter = (data) => {
     if (typeof data === "function") {
       setFormData((prev) => {
@@ -173,69 +160,81 @@ const App: React.FC = () => {
   console.log("All applications:", allApplications);
   console.log("User applications:", userApplications);
 
-  switch (page) {
-    case "dashboard":
-      return <Dashboard currentUser={currentUser} setPage={setPage} />;
-    case "admin-dashboard":
-      return (
-        <AdminDashboard
-          setPage={setPage}
-          currentUser={currentUser}
-          applications={allApplications}
-          onUpdateStatus={handleUpdateStatus}
-        />
-      );
-    case "apply":
-      return (
-        <ApplicationForm
-          setPage={setPage}
-          currentUser={currentUser}
-          setFormData={handleSetFormData}
-          nextStep={handleNextStep}
-        />
-      );
-    case "apply-transcript":
-      return (
-        <TranscriptForm
-          setPage={setPage}
-          currentUser={currentUser}
-          setFormData={handleSetFormData}
-          nextStep={handleNextStep}
-        />
-      );
-    case "status":
-      return (
-        <ApplicationStatus
-          setPage={setPage}
-          currentUser={currentUser}
-          applications={isAdmin ? allApplications : userApplications}
-        />
-      );
-    case "results":
-      // Lấy hồ sơ mới nhất của người dùng
-      const latestApplication = userApplications[userApplications.length - 1];
-      return (
-        <ExamResults
-          setPage={setPage}
-          currentUser={currentUser}
-          applicationData={latestApplication}
-        />
-      );
-    case "guide":
-      return <GuideRegistration setPage={setPage} currentUser={currentUser} />;
-    case "login":
-      return (
-        <Login
-          setCurrentUser={setCurrentUser}
-          setPage={setPage}
-          setIsAdmin={setIsAdmin}
-        />
-      );
-    case "register":
-      return <Register setCurrentUser={setCurrentUser} setPage={setPage} />;
-    default:
-      return <Dashboard currentUser={currentUser} setPage={setPage} />;
-  }
+  const renderContent = () => {
+    switch (page) {
+      case "dashboard":
+        return <Dashboard currentUser={currentUser} setPage={setPage} />;
+      case "admin-dashboard":
+        return (
+          <AdminDashboard
+            setPage={setPage}
+            currentUser={currentUser}
+            applications={allApplications}
+            onUpdateStatus={handleUpdateStatus}
+          />
+        );
+      case "apply":
+        return (
+          <ApplicationForm
+            setPage={setPage}
+            currentUser={currentUser}
+            setFormData={handleSetFormData}
+            nextStep={handleNextStep}
+          />
+        );
+      case "apply-transcript":
+        return (
+          <TranscriptForm
+            setPage={setPage}
+            currentUser={currentUser}
+            setFormData={handleSetFormData}
+            nextStep={handleNextStep}
+          />
+        );
+      case "status":
+        return (
+          <ApplicationStatus
+            setPage={setPage}
+            currentUser={currentUser}
+            applications={isAdmin ? allApplications : userApplications}
+          />
+        );
+      case "results":
+        // Lấy hồ sơ mới nhất của người dùng
+        const latestApplication = userApplications[userApplications.length - 1];
+        return (
+          <ExamResults
+            setPage={setPage}
+            currentUser={currentUser}
+            applicationData={latestApplication}
+          />
+        );
+      case "guide":
+        return (
+          <GuideRegistration setPage={setPage} currentUser={currentUser} />
+        );
+      default:
+        return <Dashboard currentUser={currentUser} setPage={setPage} />;
+    }
+  };
+
+  return (
+    <UniversityProvider>
+      {currentUser === null ? (
+        page === "register" ? (
+          <Register setCurrentUser={setCurrentUser} setPage={setPage} />
+        ) : (
+          <Login
+            setCurrentUser={setCurrentUser}
+            setPage={setPage}
+            setIsAdmin={setIsAdmin}
+          />
+        )
+      ) : (
+        renderContent()
+      )}
+    </UniversityProvider>
+  );
 };
 
 export default App;

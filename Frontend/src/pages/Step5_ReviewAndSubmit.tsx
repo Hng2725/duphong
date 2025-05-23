@@ -24,36 +24,71 @@ const Step5_ReviewAndSubmit: React.FC<Step5Props> = ({
     try {
       const result = await submitForm();
       // Set status to "Chờ duyệt" initially
-      const applicationData = { ...formData, status: "Chờ duyệt" };
+      const applicationData = {
+        ...formData,
+        status: "Chờ duyệt",
+        personalInfo: {
+          ...formData.personalInfo,
+          name: currentUser || formData.personalInfo.name,
+        },
+      };
       setApplicationData(applicationData);
-      setPage("results");
+      setPage("status");
     } catch (error) {
       console.error("Submission error:", error);
     }
   };
 
   return (
-    <CommonLayout setPage={setPage} currentUser={currentUser} activePage="apply">
+    <CommonLayout
+      setPage={setPage}
+      currentUser={currentUser}
+      activePage="apply"
+    >
       <div className="form-step">
         <h2>Xem lại và gửi hồ sơ</h2>
         <div className="review-section">
           <h3>Thông tin cá nhân</h3>
-          <p><strong>Họ tên:</strong> {formData.personalInfo.name}</p>
-          <p><strong>Giới tính:</strong> {formData.personalInfo.gender}</p>
-          <p><strong>Ngày sinh:</strong> {formData.personalInfo.dateOfBirth}</p>
-          <p><strong>Địa chỉ:</strong> {formData.personalInfo.address}</p>
-          <p><strong>Dân tộc:</strong> {formData.personalInfo.ethnicity}</p>
-          <p><strong>Số điện thoại:</strong> {formData.personalInfo.phone}</p>
-          <p><strong>CCCD:</strong> {formData.personalInfo.cccd}</p>
+          <p>
+            <strong>Họ tên:</strong> {formData.personalInfo.name}
+          </p>
+          <p>
+            <strong>Giới tính:</strong> {formData.personalInfo.gender}
+          </p>
+          <p>
+            <strong>Ngày sinh:</strong> {formData.personalInfo.dateOfBirth}
+          </p>
+          <p>
+            <strong>Địa chỉ:</strong> {formData.personalInfo.address}
+          </p>
+          <p>
+            <strong>Dân tộc:</strong> {formData.personalInfo.ethnicity}
+          </p>
+          <p>
+            <strong>Số điện thoại:</strong> {formData.personalInfo.phone}
+          </p>
+          <p>
+            <strong>CCCD:</strong> {formData.personalInfo.cccd}
+          </p>
         </div>
 
         <div className="review-section">
           <h3>Thông tin học vấn</h3>
-          <p><strong>Trường:</strong> {formData.school}</p>
-          <p><strong>Ngành:</strong> {formData.major}</p>
-          <p><strong>Tổ hợp:</strong> {formData.examCombination}</p>
-          <p><strong>Điểm:</strong> {JSON.stringify(formData.scores)}</p>
-          <p><strong>Ưu tiên:</strong> {formData.priorityCategories.join(", ")}</p>
+          <p>
+            <strong>Trường:</strong> {formData.school}
+          </p>
+          <p>
+            <strong>Ngành:</strong> {formData.major}
+          </p>
+          <p>
+            <strong>Tổ hợp:</strong> {formData.examCombination}
+          </p>
+          <p>
+            <strong>Điểm:</strong> {JSON.stringify(formData.scores)}
+          </p>
+          <p>
+            <strong>Ưu tiên:</strong> {formData.priorityCategories.join(", ")}
+          </p>
         </div>
 
         <div className="review-section">

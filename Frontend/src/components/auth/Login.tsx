@@ -18,31 +18,44 @@ const Login: React.FC<LoginProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Form submitted"); // Debug log
+
+    // Reset error
+    setError("");
+
+    // Validate input
+    if (!username || !password) {
+      setError("Vui lòng nhập đầy đủ thông tin!");
+      return;
+    }
 
     // Kiểm tra tài khoản admin
     if (username === "admin" && password === "123") {
+      console.log("Admin login"); // Debug log
       setCurrentUser("admin");
-      setIsAdmin && setIsAdmin(true);
+      if (setIsAdmin) setIsAdmin(true);
+      localStorage.setItem("currentUser", "admin");
       setPage("admin-dashboard");
       return;
     }
 
     // Xử lý đăng nhập cho người dùng thông thường
-    if (username && password) {
-      setCurrentUser(username);
-      setIsAdmin && setIsAdmin(false);
-      setPage("dashboard");
-      localStorage.setItem("currentUser", username);
-    } else {
-      setError("Vui lòng nhập đầy đủ thông tin!");
-    }
+    console.log("User login"); // Debug log
+    setCurrentUser(username);
+    if (setIsAdmin) setIsAdmin(false);
+    localStorage.setItem("currentUser", username);
+    setPage("dashboard");
+  };
+
+  const handleLoginClick = () => {
+    console.log("Login button clicked"); // Debug log
   };
 
   return (
     <div className="auth-wrapper">
       <div className="login-container">
         <h2>Đăng nhập</h2>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <div className="form-group">
             <label htmlFor="username">Tên đăng nhập:</label>
             <input
@@ -50,6 +63,7 @@ const Login: React.FC<LoginProps> = ({
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              placeholder="Nhập tên đăng nhập"
             />
           </div>
           <div className="form-group">
@@ -59,16 +73,26 @@ const Login: React.FC<LoginProps> = ({
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="Nhập mật khẩu"
             />
           </div>
           {error && <div className="error-message">{error}</div>}
-          <button type="submit" className="login-button">
+          <button
+            type="submit"
+            className="login-button"
+            onClick={handleLoginClick}
+          >
             Đăng nhập
           </button>
         </form>
         <div className="register-link">
           Chưa có tài khoản?{" "}
-          <a onClick={() => setPage("register")}>Đăng ký ngay</a>
+          <span
+            onClick={() => setPage("register")}
+            style={{ cursor: "pointer", color: "#3498db" }}
+          >
+            Đăng ký ngay
+          </span>
         </div>
       </div>
     </div>

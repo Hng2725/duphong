@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FormData } from "../../types";
 import CommonLayout from "./CommonLayout";
+import { useUniversity } from "../../contexts/UniversityContext";
 import "../../styles/CombinedForm.css";
 
 interface CombinedFormProps {
@@ -16,6 +17,8 @@ const CombinedForm: React.FC<CombinedFormProps> = ({
   setPage,
   currentUser,
 }) => {
+  const { universities, examCombinations } = useUniversity();
+  const [selectedSchool, setSelectedSchool] = useState("");
   const [localData, setLocalData] = useState<FormData>({
     school: "",
     major: "",
@@ -72,17 +75,32 @@ const CombinedForm: React.FC<CombinedFormProps> = ({
     submissionDate: new Date().toLocaleDateString(),
   });
 
-  const [errors, setErrors] = useState<{ cccd?: string; phone?: string }>({}); // State để lưu lỗi
+  const [errors, setErrors] = useState<{ cccd?: string; phone?: string }>({});
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setLocalData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    if (name === "school") {
+      setSelectedSchool(value);
+      setLocalData((prev) => ({
+        ...prev,
+        school: value,
+        major: "", // Reset major when school changes
+      }));
+    } else {
+      setLocalData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
   };
+
+  // Get the selected university's majors
+  const selectedUniversity = universities.find(
+    (uni) => uni.name === selectedSchool
+  );
+  const availableMajors = selectedUniversity?.majors || [];
 
   const handlePersonalInfoChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -226,31 +244,43 @@ const CombinedForm: React.FC<CombinedFormProps> = ({
             name="school"
             value={localData.school}
             onChange={handleInputChange}
+            required
           >
             <option value="">Chọn trường</option>
-            <option value="Trường A">Trường A</option>
-            <option value="Trường B">Trường B</option>
-            <option value="Trường C">Trường C</option>
+            {universities.map((uni) => (
+              <option key={uni.id} value={uni.name}>
+                {uni.name}
+              </option>
+            ))}
           </select>
+
           <select
             name="major"
             value={localData.major}
             onChange={handleInputChange}
+            required
+            disabled={!selectedSchool} // Disable if no school is selected
           >
             <option value="">Chọn ngành</option>
-            <option value="Ngành X">Ngành X</option>
-            <option value="Ngành Y">Ngành Y</option>
-            <option value="Ngành Z">Ngành Z</option>
+            {availableMajors.map((major) => (
+              <option key={major} value={major}>
+                {major}
+              </option>
+            ))}
           </select>
+
           <select
             name="examCombination"
             value={localData.examCombination}
             onChange={handleInputChange}
+            required
           >
             <option value="">Chọn tổ hợp</option>
-            <option value="A00">A00</option>
-            <option value="A01">A01</option>
-            <option value="D01">D01</option>
+            {examCombinations.map((combo) => (
+              <option key={combo.id} value={combo.code}>
+                {combo.code} - {combo.description} ({combo.subjects.join(", ")})
+              </option>
+            ))}
           </select>
         </div>
 

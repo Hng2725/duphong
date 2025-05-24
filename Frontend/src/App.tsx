@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Login from "./components/auth/Login";
 import Register from "./components/auth/Register";
 import Dashboard from "./pages/Dashboard";
@@ -73,19 +73,48 @@ const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [page, setPage] = useState("dashboard");
-  const [formData, setFormData] = useState<FormData | null>(null);
+  const [formData, setFormData] = useState<FormData>(defaultFormData);
   const [allApplications, setAllApplications] = useState<FormData[]>(() => {
-    const savedApplications = localStorage.getItem("applications");
-    return savedApplications ? JSON.parse(savedApplications) : [];
+    try {
+      const savedApplications = localStorage.getItem("applications");
+      console.log("Loading saved applications:", savedApplications);
+      return savedApplications ? JSON.parse(savedApplications) : [];
+    } catch (error) {
+      console.error("Error loading applications:", error);
+      return [];
+    }
   });
 
+  // Load user and applications on mount
   useEffect(() => {
     const user = localStorage.getItem("currentUser");
     if (user) {
       setCurrentUser(user);
       setIsAdmin(user === "admin");
     }
+
+    // Load applications
+    try {
+      const savedApplications = localStorage.getItem("applications");
+      if (savedApplications) {
+        const parsed = JSON.parse(savedApplications);
+        console.log("Loaded applications on mount:", parsed);
+        setAllApplications(parsed);
+      }
+    } catch (error) {
+      console.error("Error loading applications on mount:", error);
+    }
   }, []);
+
+  // Save applications whenever they change
+  useEffect(() => {
+    try {
+      console.log("Saving applications:", allApplications);
+      localStorage.setItem("applications", JSON.stringify(allApplications));
+    } catch (error) {
+      console.error("Error saving applications:", error);
+    }
+  }, [allApplications]);
 
   useEffect(() => {
     if (page === "logout") {
@@ -96,27 +125,60 @@ const App: React.FC = () => {
     }
   }, [page]);
 
-  // Lưu applications vào localStorage mỗi khi có thay đổi
-  useEffect(() => {
-    localStorage.setItem("applications", JSON.stringify(allApplications));
-  }, [allApplications]);
-
   const handleNextStep = () => {
-    if (formData && currentUser) {
-      console.log("Form submitted:", formData);
-      const updatedFormData = {
-        ...formData,
-        status: "Chờ duyệt",
-        submissionDate: new Date().toLocaleDateString(),
-        personalInfo: {
-          ...formData.personalInfo,
-          name: currentUser || formData.personalInfo.name,
-        },
-      };
-      setFormData(updatedFormData);
-      setAllApplications((prev) => [...prev, updatedFormData]);
-      setPage("status");
+    console.log("handleNextStep called with:", { formData, currentUser });
+
+    if (!currentUser) {
+      console.error("No current user found");
+      return;
     }
+
+    // Validate required fields
+    if (!formData.school || !formData.major || !formData.examCombination) {
+      console.error("Missing required form fields:", {
+        school: formData.school,
+        major: formData.major,
+        examCombination: formData.examCombination,
+      });
+      return;
+    }
+
+    console.log("Form data before update:", formData);
+
+    const updatedFormData = {
+      ...formData,
+      status: "Chờ duyệt",
+      submissionDate: new Date().toLocaleDateString(),
+      personalInfo: {
+        ...formData.personalInfo,
+        name: currentUser,
+      },
+    };
+
+    console.log("Updated form data:", updatedFormData);
+
+    // Cập nhật state
+    setFormData(updatedFormData);
+    setAllApplications((prev) => {
+      const newApplications = [...prev, updatedFormData];
+      console.log("New applications list:", newApplications);
+      return newApplications;
+    });
+
+    // Lưu trực tiếp vào localStorage
+    try {
+      const currentApps = JSON.parse(
+        localStorage.getItem("applications") || "[]"
+      );
+      const newApps = [...currentApps, updatedFormData];
+      localStorage.setItem("applications", JSON.stringify(newApps));
+      console.log("Saved to localStorage:", newApps);
+    } catch (error) {
+      console.error("Error saving to localStorage:", error);
+    }
+
+    // Chuyển hướng sau khi đã lưu thành công
+    setPage("status");
   };
 
   const handleUpdateStatus = (applicationId: number, newStatus: string) => {
@@ -142,23 +204,35 @@ const App: React.FC = () => {
     if (typeof data === "function") {
       setFormData((prev) => {
         const result = data(prev);
-        return { ...defaultFormData, ...result };
+        const newData = { ...defaultFormData, ...result };
+        console.log("Setting form data (function):", newData);
+        return newData;
       });
     } else {
-      setFormData({ ...defaultFormData, ...data });
+      const newData = { ...defaultFormData, ...data };
+      console.log("Setting form data (direct):", newData);
+      setFormData(newData);
     }
   };
 
   // Lọc hồ sơ của người dùng hiện tại
-  const userApplications = allApplications.filter((app) => {
-    console.log("Checking application:", app);
-    console.log("Current user:", currentUser);
-    console.log("Application name:", app.personalInfo?.name);
-    return app.personalInfo?.name === currentUser;
-  });
+  const userApplications = useMemo(() => {
+    return allApplications.filter((app) => {
+      const matches = app.personalInfo?.name === currentUser;
+      console.log("Filtering application:", {
+        applicationName: app.personalInfo?.name,
+        currentUser,
+        matches,
+      });
+      return matches;
+    });
+  }, [allApplications, currentUser]);
 
-  console.log("All applications:", allApplications);
-  console.log("User applications:", userApplications);
+  console.log("Current state:", {
+    allApplications,
+    userApplications,
+    currentUser,
+  });
 
   const renderContent = () => {
     switch (page) {

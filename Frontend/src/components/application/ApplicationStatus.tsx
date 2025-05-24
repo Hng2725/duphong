@@ -2,6 +2,7 @@ import React from "react";
 import "../../styles.css";
 import { FormData } from "../../types";
 import CommonLayout from "./CommonLayout";
+import { useUniversity } from "../../contexts/UniversityContext";
 
 interface ApplicationStatusProps {
   setPage: (page: string) => void;
@@ -14,6 +15,8 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({
   currentUser,
   applications,
 }) => {
+  const { examCombinations } = useUniversity();
+
   // Add status and submission date if not present
   const applicationsWithStatus = applications.map((app) => ({
     ...app,
@@ -32,6 +35,26 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({
       default:
         return "";
     }
+  };
+
+  // Helper function to determine if application is transcript-based
+  const isTranscriptBased = (application: FormData) => {
+    // Check if any transcript scores are filled
+    const hasTranscriptScores = Object.values(
+      application.transcriptScores?.semester1Grade12 || {}
+    ).some((score) => score !== "");
+    // Check if exam scores are filled
+    const hasExamScores = Object.keys(application.scores || {}).length > 0;
+
+    return hasTranscriptScores && !hasExamScores;
+  };
+
+  // Helper function to get subject names for an exam combination
+  const getSubjectNames = (examCode: string) => {
+    const combination = examCombinations.find(
+      (combo) => combo.code === examCode
+    );
+    return combination?.subjects || [];
   };
 
   return (
@@ -98,23 +121,19 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({
                         {application.examCombination}
                       </p>
                     )}
-                    {application.transcriptScores && (
-                      <p>
-                        <strong>Hình thức:</strong> Xét tuyển học bạ
-                      </p>
-                    )}
-                    {!application.transcriptScores && (
-                      <p>
-                        <strong>Hình thức:</strong> Xét tuyển điểm thi
-                      </p>
-                    )}
+                    <p>
+                      <strong>Hình thức:</strong>{" "}
+                      {isTranscriptBased(application)
+                        ? "Xét tuyển học bạ"
+                        : "Xét tuyển điểm thi"}
+                    </p>
                   </div>
                 </div>
 
                 <div className="detail-section">
                   <h4>Điểm xét tuyển</h4>
                   <div className="info-grid">
-                    {application.transcriptScores ? (
+                    {isTranscriptBased(application) ? (
                       <>
                         <p>
                           <strong>Học kỳ 1 - Lớp 12:</strong>
@@ -128,13 +147,20 @@ const ApplicationStatus: React.FC<ApplicationStatusProps> = ({
                         ))}
                       </>
                     ) : (
-                      Object.entries(application.scores).map(
-                        ([subject, score]) => (
-                          <p key={subject}>
-                            <strong>{subject}:</strong> {score}
-                          </p>
-                        )
-                      )
+                      <>
+                        {getSubjectNames(application.examCombination).map(
+                          (subject, idx) => {
+                            const score = Object.values(application.scores)[
+                              idx
+                            ];
+                            return (
+                              <p key={subject}>
+                                <strong>{subject}:</strong> {score}
+                              </p>
+                            );
+                          }
+                        )}
+                      </>
                     )}
                   </div>
                 </div>

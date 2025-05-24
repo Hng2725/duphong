@@ -23,19 +23,15 @@ const Step5_ReviewAndSubmit: React.FC<Step5Props> = ({
   const handleSubmit = async () => {
     try {
       const result = await submitForm();
-      // Set status to "Chờ duyệt" initially
-      const applicationData = {
-        ...formData,
-        status: "Chờ duyệt",
-        personalInfo: {
-          ...formData.personalInfo,
-          name: currentUser || formData.personalInfo.name,
-        },
-      };
-      setApplicationData(applicationData);
-      setPage("status");
+      if (result.status === "success") {
+        // Chỉ chuyển trang, không cần setApplicationData vì đã được xử lý trong App.tsx
+        setPage("status");
+      } else {
+        alert("Có lỗi xảy ra khi gửi hồ sơ. Vui lòng thử lại.");
+      }
     } catch (error) {
       console.error("Submission error:", error);
+      alert("Có lỗi xảy ra khi gửi hồ sơ. Vui lòng thử lại.");
     }
   };
 
@@ -110,7 +106,13 @@ const Step5_ReviewAndSubmit: React.FC<Step5Props> = ({
           <button className="prev-button" onClick={prevStep}>
             Quay lại
           </button>
-          <button className="submit-button" onClick={handleSubmit}>
+          <button
+            className="submit-button"
+            onClick={handleSubmit}
+            disabled={
+              !formData.school || !formData.major || !formData.examCombination
+            }
+          >
             Gửi hồ sơ
           </button>
         </div>

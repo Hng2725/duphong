@@ -77,6 +77,13 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({
     submissionDate: new Date().toLocaleDateString(),
   });
 
+  // Update parent's formData whenever local state changes
+  useEffect(() => {
+    console.log("Updating parent formData:", formDataState);
+    setFormData(formDataState);
+  }, [formDataState, setFormData]);
+
+  // Update local state when currentUser changes
   useEffect(() => {
     if (currentUser) {
       setFormDataState((prev) => ({
@@ -93,12 +100,52 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({
 
   const handleFormSubmit = async (): Promise<{ status: string }> => {
     try {
-      console.log("Submitting form data:", formDataState);
-      setFormData(formDataState);
+      console.log("Starting form submission with data:", formDataState);
+
+      // Validate required fields
+      if (
+        !formDataState.school ||
+        !formDataState.major ||
+        !formDataState.examCombination
+      ) {
+        console.error("Missing required fields:", {
+          school: formDataState.school,
+          major: formDataState.major,
+          examCombination: formDataState.examCombination,
+        });
+        return { status: "error" };
+      }
+
+      // Validate user
+      if (!currentUser) {
+        console.error("No current user found");
+        return { status: "error" };
+      }
+
+      // Create updated form data
+      const updatedFormData = {
+        ...formDataState,
+        status: "Chờ duyệt",
+        submissionDate: new Date().toLocaleDateString(),
+        personalInfo: {
+          ...formDataState.personalInfo,
+          name: currentUser,
+        },
+      };
+
+      console.log("Prepared form data for submission:", updatedFormData);
+
+      // Update both local and parent state
+      setFormDataState(updatedFormData);
+      setFormData(updatedFormData);
+
+      // Call nextStep to trigger the parent's submission logic
       nextStep();
+
+      console.log("Form submitted successfully");
       return { status: "success" };
     } catch (error) {
-      console.error("Error submitting form:", error);
+      console.error("Error in form submission:", error);
       return { status: "error" };
     }
   };

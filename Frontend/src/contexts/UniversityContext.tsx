@@ -5,6 +5,7 @@ export interface University {
   name: string;
   code: string;
   majors: string[];
+  examCombinations: string[]; // Mã các tổ hợp xét tuyển của trường
 }
 
 export interface ExamCombination {

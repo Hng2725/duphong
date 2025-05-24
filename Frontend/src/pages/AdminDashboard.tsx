@@ -6,6 +6,7 @@ import {
   ExamCombination,
 } from "../contexts/UniversityContext";
 import MajorManagement from "../components/admin/MajorManagement";
+import ExamCombinationManagement from "../components/admin/ExamCombinationManagement";
 import "../styles.css";
 
 interface AdminDashboardProps {
@@ -55,6 +56,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [formData, setFormData] = useState<FormDataType>({});
   const [selectedUniversity, setSelectedUniversity] =
     useState<University | null>(null);
+  const [showExamCombinations, setShowExamCombinations] = useState(false);
 
   if (currentUser !== "admin") {
     return (
@@ -71,7 +73,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setEditingItem(null);
     setFormData(
       editTab === "universities"
-        ? ({} as UniversityFormData)
+        ? ({ majors: [], examCombinations: [] } as UniversityFormData)
         : ({} as ExamCombinationFormData)
     );
     setShowModal(true);
@@ -93,16 +95,30 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
-    if (name === "majors" || name === "subjects") {
+    if (name.startsWith("subject")) {
+      const subjectIndex = parseInt(name.replace("subject", "")) - 1;
+      setFormData((prev) => {
+        const currentForm = prev as ExamCombinationFormData;
+        const subjects = [...(currentForm.subjects || ["", "", ""])];
+        subjects[subjectIndex] = value;
+        return {
+          ...prev,
+          subjects,
+        };
+      });
+    } else if (name === "selectedUniversities") {
+      // Xử lý khi chọn trường từ dropdown
+      const selectedOptions = Array.from(
+        (e.target as HTMLSelectElement).selectedOptions
+      ).map((option) => option.value);
       setFormData((prev) => ({
         ...prev,
-        [name]: value
-          .split(",")
-          .map((item) => item.trim())
-          .filter((item) => item !== ""),
+        selectedUniversities: selectedOptions,
       }));
     } else {
       setFormData((prev) => ({
@@ -163,12 +179,17 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {
             ...universityData,
             id: universities.length + 1,
-            majors: [], // Initialize with empty majors array
+            majors: universityData.majors || [],
+            examCombinations: universityData.examCombinations || [],
           } as University,
         ]);
       }
     } else if (editTab === "combinations" && isExamCombinationForm(formData)) {
       const combinationData = formData as ExamCombinationFormData;
+      const selectedUniversities = (formData as any).selectedUniversities || [];
+      const combinationCode = combinationData.code || "";
+
+      // Cập nhật tổ hợp
       if (editingItem) {
         setExamCombinations(
           examCombinations.map((combo) =>
@@ -186,6 +207,32 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
           } as ExamCombination,
         ]);
       }
+
+      // Cập nhật danh sách tổ hợp trong các trường được chọn
+      const updatedUniversities = universities.map((uni) => {
+        const currentCombinations = uni.examCombinations || [];
+
+        if (selectedUniversities.includes(uni.code)) {
+          // Thêm tổ hợp nếu trường được chọn và chưa có tổ hợp này
+          if (!currentCombinations.includes(combinationCode)) {
+            return {
+              ...uni,
+              examCombinations: [...currentCombinations, combinationCode],
+            } as University;
+          }
+        } else {
+          // Loại bỏ tổ hợp nếu trường không được chọn
+          return {
+            ...uni,
+            examCombinations: currentCombinations.filter(
+              (code) => code !== combinationCode
+            ),
+          } as University;
+        }
+        return uni;
+      });
+
+      setUniversities(updatedUniversities);
     }
     setShowModal(false);
     setFormData({});
@@ -196,6 +243,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
       editTab === "universities" ? (formData as UniversityFormData) : null;
     const examForm =
       editTab === "combinations" ? (formData as ExamCombinationFormData) : null;
+
+    // Khởi tạo mảng subjects với 3 phần tử nếu chưa có
+    const subjects = examForm?.subjects || ["", "", ""];
+
+    // Lấy danh sách các trường đã chọn tổ hợp này
+    const selectedUniversities = universities
+      .filter((uni) => uni.examCombinations?.includes(examForm?.code || ""))
+      .map((uni) => uni.code);
 
     return (
       <div className="admin-modal">
@@ -240,42 +295,86 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <input
                     type="text"
                     name="code"
-                    placeholder="Ví dụ: A00, A01, ..."
-                    value={formData.code || ""}
+                    placeholder="Mã tổ hợp (VD: A00, B00)"
+                    value={examForm?.code || ""}
                     onChange={handleInputChange}
                   />
                 </div>
                 <div className="form-group">
-                  <label>Các môn (phân cách bằng dấu phẩy):</label>
+                  <label>Các môn thi:</label>
+                  <div className="subjects-inputs">
+                    <div className="subject-input">
+                      <label>Môn 1:</label>
+                      <input
+                        type="text"
+                        name="subject1"
+                        placeholder="Nhập môn thi thứ nhất"
+                        value={subjects[0]}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                    <div className="subject-input">
+                      <label>Môn 2:</label>
+                      <input
+                        type="text"
+                        name="subject2"
+                        placeholder="Nhập môn thi thứ hai"
+                        value={subjects[1]}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                    <div className="subject-input">
+                      <label>Môn 3:</label>
+                      <input
+                        type="text"
+                        name="subject3"
+                        placeholder="Nhập môn thi thứ ba"
+                        value={subjects[2]}
+                        onChange={handleInputChange}
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="form-group">
+                  <label>Mô tả:</label>
                   <textarea
-                    name="subjects"
-                    placeholder="Ví dụ: Toán, Lý, Hóa"
-                    value={examForm?.subjects?.join(", ") || ""}
+                    name="description"
+                    placeholder="Mô tả tổ hợp"
+                    value={examForm?.description || ""}
                     onChange={handleInputChange}
                     rows={3}
                   />
                 </div>
                 <div className="form-group">
-                  <label>Mô tả:</label>
-                  <input
-                    type="text"
-                    name="description"
-                    placeholder="Ví dụ: Khối A"
-                    value={examForm?.description || ""}
+                  <label>Áp dụng cho các trường:</label>
+                  <select
+                    name="selectedUniversities"
+                    multiple
+                    value={selectedUniversities}
                     onChange={handleInputChange}
-                  />
+                    className="universities-select"
+                  >
+                    {universities.map((uni) => (
+                      <option key={uni.id} value={uni.code}>
+                        {uni.name} ({uni.code})
+                      </option>
+                    ))}
+                  </select>
+                  <small className="select-hint">
+                    Giữ Ctrl (Windows) hoặc Command (Mac) để chọn nhiều trường
+                  </small>
                 </div>
               </>
             )}
-            <div className="modal-buttons">
+            <div className="modal-footer">
+              <button onClick={handleSave} className="save-button">
+                {editingItem ? "Cập nhật" : "Thêm mới"}
+              </button>
               <button
-                className="cancel-button"
                 onClick={() => setShowModal(false)}
+                className="cancel-button"
               >
                 Hủy
-              </button>
-              <button className="save-button" onClick={handleSave}>
-                Lưu
               </button>
             </div>
           </div>
@@ -314,7 +413,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
           <div className="search-add">
             <input
               type="text"
-              placeholder="Tìm kiếm..."
+              placeholder={
+                editTab === "universities"
+                  ? "Tìm kiếm trường..."
+                  : "Tìm kiếm tổ hợp..."
+              }
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="search-input"
@@ -332,23 +435,53 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <>
                   <h3>{(item as University).name}</h3>
                   <p>Mã trường: {item.code}</p>
-                  <p>
-                    Số ngành: {(item as University).majors.length}
-                    <button
-                      onClick={() => setSelectedUniversity(item as University)}
-                      className="manage-majors-button"
-                    >
-                      Quản lý ngành
-                    </button>
-                  </p>
+                  <div className="university-actions">
+                    <p>
+                      Số ngành: {(item as University).majors.length}
+                      <button
+                        onClick={() =>
+                          setSelectedUniversity(item as University)
+                        }
+                        className="manage-button manage-majors-button"
+                      >
+                        Quản lý ngành
+                      </button>
+                    </p>
+                  </div>
                 </>
               ) : (
                 <>
-                  <h3>{item.code}</h3>
-                  <p>
-                    Môn thi: {(item as ExamCombination).subjects.join(", ")}
-                  </p>
-                  <p>Mô tả: {(item as ExamCombination).description}</p>
+                  <h3>Tổ hợp {item.code}</h3>
+                  <div className="combo-details">
+                    <p className="subjects">
+                      <strong>Môn thi:</strong>{" "}
+                      {(item as ExamCombination).subjects.map(
+                        (subject, idx) => (
+                          <span key={idx} className="subject-tag">
+                            {subject}
+                          </span>
+                        )
+                      )}
+                    </p>
+                    <p className="description">
+                      <strong>Mô tả:</strong>{" "}
+                      {(item as ExamCombination).description}
+                    </p>
+                    <div className="universities-using">
+                      <strong>Các trường sử dụng:</strong>
+                      <div className="university-tags">
+                        {universities
+                          .filter((uni) =>
+                            uni.examCombinations?.includes(item.code)
+                          )
+                          .map((uni) => (
+                            <span key={uni.id} className="university-tag">
+                              {uni.name}
+                            </span>
+                          ))}
+                      </div>
+                    </div>
+                  </div>
                 </>
               )}
               <div className="item-actions">
@@ -494,6 +627,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
         <MajorManagement
           university={selectedUniversity}
           onClose={() => setSelectedUniversity(null)}
+        />
+      )}
+
+      {showExamCombinations && selectedUniversity && (
+        <ExamCombinationManagement
+          university={selectedUniversity}
+          onClose={() => {
+            setShowExamCombinations(false);
+            setSelectedUniversity(null);
+          }}
         />
       )}
     </div>

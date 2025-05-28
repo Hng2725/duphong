@@ -133,13 +133,55 @@ const App: React.FC = () => {
       return;
     }
 
-    // Validate required fields
-    if (!formData.school || !formData.major || !formData.examCombination) {
-      console.error("Missing required form fields:", {
+    // First, determine if this is a transcript-based application
+    const isTranscriptBased = Object.values(
+      formData.transcriptScores.semester1Grade12
+    ).some((score) => score !== "");
+
+    // For exam-based applications, check examCombination
+    if (!isTranscriptBased && !formData.examCombination) {
+      console.error("Missing required form field: examCombination");
+      alert("Vui lòng chọn tổ hợp xét tuyển");
+      return;
+    }
+
+    // Validate school and major for all applications
+    if (!formData.school || !formData.major) {
+      console.error("Missing required fields:", {
         school: formData.school,
         major: formData.major,
-        examCombination: formData.examCombination,
       });
+      alert("Vui lòng chọn trường và ngành học");
+      return;
+    }
+
+    // Validate personal info
+    const missingPersonalInfo = [];
+    if (!formData.personalInfo.gender) missingPersonalInfo.push("Giới tính");
+    if (!formData.personalInfo.dateOfBirth)
+      missingPersonalInfo.push("Ngày sinh");
+    if (!formData.personalInfo.address) missingPersonalInfo.push("Địa chỉ");
+    if (!formData.personalInfo.phone) missingPersonalInfo.push("Số điện thoại");
+    if (!formData.personalInfo.cccd) missingPersonalInfo.push("CCCD");
+    if (!formData.personalInfo.ethnicity) missingPersonalInfo.push("Dân tộc");
+
+    if (missingPersonalInfo.length > 0) {
+      console.error("Missing personal info:", missingPersonalInfo);
+      alert(
+        "Vui lòng điền đầy đủ thông tin cá nhân: " +
+          missingPersonalInfo.join(", ")
+      );
+      return;
+    }
+
+    // Validate priority category
+    if (
+      !formData.priorityCategories ||
+      formData.priorityCategories.length === 0 ||
+      !formData.priorityCategories[0]
+    ) {
+      console.error("Missing priority category");
+      alert("Vui lòng chọn đối tượng ưu tiên");
       return;
     }
 
@@ -157,7 +199,7 @@ const App: React.FC = () => {
 
     console.log("Updated form data:", updatedFormData);
 
-    // Cập nhật state
+    // Update state
     setFormData(updatedFormData);
     setAllApplications((prev) => {
       const newApplications = [...prev, updatedFormData];
@@ -165,7 +207,7 @@ const App: React.FC = () => {
       return newApplications;
     });
 
-    // Lưu trực tiếp vào localStorage
+    // Save to localStorage
     try {
       const currentApps = JSON.parse(
         localStorage.getItem("applications") || "[]"
@@ -177,7 +219,7 @@ const App: React.FC = () => {
       console.error("Error saving to localStorage:", error);
     }
 
-    // Chuyển hướng sau khi đã lưu thành công
+    // Redirect after successful save
     setPage("status");
   };
 

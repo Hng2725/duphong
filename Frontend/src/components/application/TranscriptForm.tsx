@@ -3,6 +3,7 @@ import { FormData, FormDataSetter, SemesterKey, SubjectKey } from "../../types";
 import CommonLayout from "./CommonLayout";
 import { useUniversity } from "../../contexts/UniversityContext";
 import "../../styles/CombinedForm.css";
+import "../../styles/Upload.css";
 
 interface TranscriptFormProps {
   setPage: (page: string) => void;
@@ -96,6 +97,27 @@ const TranscriptForm: React.FC<TranscriptFormProps> = ({
     }
   };
 
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    field: "documents" | "documents2" | "documents3"
+  ) => {
+    const files = Array.from(e.target.files || []);
+    setLocalData((prev) => ({
+      ...prev,
+      [field]: files,
+    }));
+  };
+
+  const handleRemoveFile = (
+    field: "documents" | "documents2" | "documents3",
+    index: number
+  ) => {
+    setLocalData((prev) => ({
+      ...prev,
+      [field]: prev[field].filter((_: any, i: number) => i !== index),
+    }));
+  };
+
   // Get the selected university's majors
   const selectedUniversity = universities.find(
     (uni) => uni.name === selectedSchool
@@ -144,18 +166,79 @@ const TranscriptForm: React.FC<TranscriptFormProps> = ({
   };
 
   const handlePriorityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setLocalData((prev) => ({
-      ...prev,
-      priorityCategories: [e.target.value],
-    }));
+    const value = e.target.value;
+    console.log("Priority selected:", value);
+    setLocalData((prev) => {
+      const newData = {
+        ...prev,
+        priorityCategories: value ? [value] : [],
+      };
+      console.log("Updated localData:", newData);
+      return newData;
+    });
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (e.currentTarget.checkValidity()) {
-      setFormData(localData);
-      nextStep();
+
+    // Check if priority category is selected
+    if (
+      !localData.priorityCategories ||
+      localData.priorityCategories.length === 0 ||
+      !localData.priorityCategories[0]
+    ) {
+      alert("Vui lòng chọn đối tượng ưu tiên");
+      return;
     }
+
+    // Check if all transcript scores are filled and valid
+    const semesters: SemesterKey[] = [
+      "semester1Grade12",
+      "semester2Grade12",
+      "semester1Grade11",
+      "semester2Grade11",
+    ];
+    const subjects: SubjectKey[] = [
+      "math",
+      "literature",
+      "english",
+      "physics",
+      "chemistry",
+      "biology",
+    ];
+
+    for (const semester of semesters) {
+      for (const subject of subjects) {
+        const score = localData.transcriptScores[semester][subject];
+        if (!score) {
+          alert(`Vui lòng nhập điểm ${subject} cho ${semester}`);
+          return;
+        }
+        const numScore = parseFloat(score);
+        if (isNaN(numScore) || numScore < 0 || numScore > 10) {
+          alert(`Điểm ${subject} cho ${semester} phải từ 0 đến 10`);
+          return;
+        }
+      }
+    }
+
+    // Check if required documents are uploaded
+    if (!localData.documents || localData.documents.length === 0) {
+      alert("Vui lòng tải lên học bạ THPT");
+      return;
+    }
+
+    if (!localData.documents2 || localData.documents2.length === 0) {
+      alert("Vui lòng tải lên CCCD/CMND");
+      return;
+    }
+
+    // Set form data with examCombination explicitly set to empty string for transcript-based applications
+    setFormData({
+      ...localData,
+      examCombination: "", // Use empty string for transcript-based applications
+    });
+    nextStep();
   };
 
   return (
@@ -694,12 +777,144 @@ const TranscriptForm: React.FC<TranscriptFormProps> = ({
         {/* Đối tượng ưu tiên */}
         <div className="form-section">
           <h3>D. Đối tượng ưu tiên</h3>
-          <select onChange={handlePriorityChange} required>
+          <select
+            name="priorityCategory"
+            value={localData.priorityCategories[0] || ""}
+            onChange={handlePriorityChange}
+            required
+          >
             <option value="">Chọn đối tượng</option>
             <option value="Ưu tiên 1">Ưu tiên 1</option>
             <option value="Ưu tiên 2">Ưu tiên 2</option>
             <option value="Không ưu tiên">Không ưu tiên</option>
           </select>
+        </div>
+
+        {/* File upload section */}
+        <div className="form-section">
+          <h3>E. Tải lên minh chứng</h3>
+
+          {/* First file upload */}
+          <div className="form-group">
+            <label>Học bạ THPT (PDF, JPEG, PNG)</label>
+            <div className="file-input-container">
+              <input
+                type="file"
+                accept=".pdf,.jpeg,.jpg,.png"
+                multiple
+                onChange={(e) => handleFileChange(e, "documents")}
+                className="file-input"
+                id="document-upload-1"
+                required
+              />
+              <label htmlFor="document-upload-1" className="file-input-label">
+                Chọn tệp...
+              </label>
+            </div>
+            {localData.documents && localData.documents.length > 0 && (
+              <div className="file-list-container">
+                <h4>Các tệp đã chọn:</h4>
+                <ul className="file-list">
+                  {localData.documents.map((file: File, index: number) => (
+                    <li key={`doc1-${index}`} className="file-list-item">
+                      <span className="file-name">{file.name}</span>
+                      <span className="file-size">
+                        {(file.size / 1024).toFixed(2)} KB
+                      </span>
+                      <button
+                        type="button"
+                        className="remove-file-button"
+                        onClick={() => handleRemoveFile("documents", index)}
+                      >
+                        Xóa
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+
+          {/* Second file upload */}
+          <div className="form-group">
+            <label>CCCD/CMND (PDF, JPEG, PNG)</label>
+            <div className="file-input-container">
+              <input
+                type="file"
+                accept=".pdf,.jpeg,.jpg,.png"
+                multiple
+                onChange={(e) => handleFileChange(e, "documents2")}
+                className="file-input"
+                id="document-upload-2"
+                required
+              />
+              <label htmlFor="document-upload-2" className="file-input-label">
+                Chọn tệp...
+              </label>
+            </div>
+            {localData.documents2 && localData.documents2.length > 0 && (
+              <div className="file-list-container">
+                <h4>Các tệp đã chọn:</h4>
+                <ul className="file-list">
+                  {localData.documents2.map((file: File, index: number) => (
+                    <li key={`doc2-${index}`} className="file-list-item">
+                      <span className="file-name">{file.name}</span>
+                      <span className="file-size">
+                        {(file.size / 1024).toFixed(2)} KB
+                      </span>
+                      <button
+                        type="button"
+                        className="remove-file-button"
+                        onClick={() => handleRemoveFile("documents2", index)}
+                      >
+                        Xóa
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+
+          {/* Third file upload */}
+          <div className="form-group">
+            <label>Giấy tờ khác (nếu có) (PDF, JPEG, PNG)</label>
+            <div className="file-input-container">
+              <input
+                type="file"
+                accept=".pdf,.jpeg,.jpg,.png"
+                multiple
+                onChange={(e) => handleFileChange(e, "documents3")}
+                className="file-input"
+                id="document-upload-3"
+              />
+              <label htmlFor="document-upload-3" className="file-input-label">
+                Chọn tệp...
+              </label>
+            </div>
+            {localData.documents3 && localData.documents3.length > 0 && (
+              <div className="file-list-container">
+                <h4>Các tệp đã chọn:</h4>
+                <ul className="file-list">
+                  {localData.documents3.map((file: File, index: number) => (
+                    <li key={`doc3-${index}`} className="file-list-item">
+                      <span className="file-name">{file.name}</span>
+                      <span className="file-size">
+                        {(file.size / 1024).toFixed(2)} KB
+                      </span>
+                      <button
+                        type="button"
+                        className="remove-file-button"
+                        onClick={() => handleRemoveFile("documents3", index)}
+                      >
+                        Xóa
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
 
         <button type="submit" className="next-button">

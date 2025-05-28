@@ -25,6 +25,18 @@ const ExamResults: React.FC<ExamResultsProps> = ({
     }
   };
 
+  // Helper function to determine if application is transcript-based
+  const isTranscriptBased = (application: FormData) => {
+    // Check if any transcript scores are filled
+    const hasTranscriptScores = Object.values(
+      application.transcriptScores?.semester1Grade12 || {}
+    ).some((score) => score !== "");
+    // Check if exam scores are filled
+    const hasExamScores = Object.keys(application.scores || {}).length > 0;
+
+    return hasTranscriptScores && !hasExamScores;
+  };
+
   // Kiểm tra xem có hồ sơ và đã được xét duyệt chưa
   const isApplicationReviewed =
     applicationData &&
@@ -38,7 +50,12 @@ const ExamResults: React.FC<ExamResultsProps> = ({
       activePage="results"
     >
       <div className="results-content">
-        <h2>Kết quả xét tuyển điểm thi</h2>
+        <h2>
+          Kết quả{" "}
+          {applicationData && isTranscriptBased(applicationData)
+            ? "xét tuyển học bạ"
+            : "xét tuyển điểm thi"}
+        </h2>
 
         {!applicationData ? (
           <div className="no-applications">
@@ -129,16 +146,87 @@ const ExamResults: React.FC<ExamResultsProps> = ({
                   <strong>Ngành:</strong> {applicationData.major}
                 </p>
                 <p>
-                  <strong>Tổ hợp xét tuyển:</strong>{" "}
-                  {applicationData.examCombination}
+                  <strong>Hình thức:</strong>{" "}
+                  {isTranscriptBased(applicationData)
+                    ? "Xét tuyển học bạ"
+                    : "Xét tuyển điểm thi"}
                 </p>
-                <p>
-                  <strong>Điểm xét tuyển:</strong>{" "}
-                  {Object.entries(applicationData.scores)
-                    .map(([subject, score]) => `${subject}: ${score}`)
-                    .join(", ")}
-                </p>
+                {!isTranscriptBased(applicationData) && (
+                  <p>
+                    <strong>Tổ hợp xét tuyển:</strong>{" "}
+                    {applicationData.examCombination}
+                  </p>
+                )}
               </div>
+            </div>
+
+            <div className="review-section">
+              {isTranscriptBased(applicationData) ? (
+                <>
+                  <h3>Điểm học bạ</h3>
+                  <div className="semester-section">
+                    <h4>Lớp 12 - Học kỳ 1</h4>
+                    <div className="info-grid">
+                      {Object.entries(
+                        applicationData.transcriptScores.semester1Grade12
+                      ).map(([subject, score]) => (
+                        <p key={subject}>
+                          <strong>{subject}:</strong> {score}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="semester-section">
+                    <h4>Lớp 12 - Học kỳ 2</h4>
+                    <div className="info-grid">
+                      {Object.entries(
+                        applicationData.transcriptScores.semester2Grade12
+                      ).map(([subject, score]) => (
+                        <p key={subject}>
+                          <strong>{subject}:</strong> {score}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="semester-section">
+                    <h4>Lớp 11 - Học kỳ 1</h4>
+                    <div className="info-grid">
+                      {Object.entries(
+                        applicationData.transcriptScores.semester1Grade11
+                      ).map(([subject, score]) => (
+                        <p key={subject}>
+                          <strong>{subject}:</strong> {score}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="semester-section">
+                    <h4>Lớp 11 - Học kỳ 2</h4>
+                    <div className="info-grid">
+                      {Object.entries(
+                        applicationData.transcriptScores.semester2Grade11
+                      ).map(([subject, score]) => (
+                        <p key={subject}>
+                          <strong>{subject}:</strong> {score}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h3>Điểm thi</h3>
+                  <div className="info-grid">
+                    {Object.entries(applicationData.scores).map(
+                      ([subject, score]) => (
+                        <p key={subject}>
+                          <strong>{subject}:</strong> {score}
+                        </p>
+                      )
+                    )}
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="review-section">

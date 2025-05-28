@@ -12,82 +12,152 @@ const Results: React.FC<ResultsProps> = ({
   setPage,
   currentUser,
   applicationData,
-}) => (
-  <CommonLayout
-    setPage={setPage}
-    currentUser={currentUser}
-    activePage="results"
-  >
-    <div className="results-content">
-      <h2>Kết quả xét tuyển</h2>
+}) => {
+  // Helper function to determine if application is transcript-based
+  const isTranscriptBased = (application: FormData) => {
+    // Check if any transcript scores are filled
+    const hasTranscriptScores = Object.values(
+      application.transcriptScores?.semester1Grade12 || {}
+    ).some((score) => score !== "");
+    // Check if exam scores are filled
+    const hasExamScores = Object.keys(application.scores || {}).length > 0;
 
-      {applicationData ? (
-        <>
-          <div className="application-status">
-            <h3>
-              Trạng thái hồ sơ:
-              <span
-                className={`status-${applicationData.status.toLowerCase().replace(" ", "-")}`}
-              >
-                {applicationData.status}
-              </span>
-            </h3>
-          </div>
+    return hasTranscriptScores && !hasExamScores;
+  };
 
-          <div className="personal-info-review">
-            <h3>Thông tin cá nhân</h3>
-            <p>
-              <strong>Họ tên:</strong> {applicationData.personalInfo.name}
-            </p>
-            <p>
-              <strong>Giới tính:</strong> {applicationData.personalInfo.gender}
-            </p>
-            <p>
-              <strong>Ngày sinh:</strong>{" "}
-              {applicationData.personalInfo.dateOfBirth}
-            </p>
-            <p>
-              <strong>Địa chỉ:</strong> {applicationData.personalInfo.address}
-            </p>
-            <p>
-              <strong>Số điện thoại:</strong>{" "}
-              {applicationData.personalInfo.phone}
-            </p>
-          </div>
+  return (
+    <CommonLayout
+      setPage={setPage}
+      currentUser={currentUser}
+      activePage="results"
+    >
+      <div className="results-content">
+        <h2>Kết quả xét tuyển</h2>
 
-          <div className="academic-info-review">
-            <h3>Thông tin học vấn</h3>
-            <p>
-              <strong>Trường:</strong> {applicationData.school}
-            </p>
-            <p>
-              <strong>Ngành:</strong> {applicationData.major}
-            </p>
-            <p>
-              <strong>Tổ hợp:</strong> {applicationData.examCombination}
-            </p>
-          </div>
+        {applicationData ? (
+          <>
+            <div className="application-status">
+              <h3>
+                Trạng thái hồ sơ:
+                <span
+                  className={`status-${applicationData.status.toLowerCase().replace(" ", "-")}`}
+                >
+                  {applicationData.status}
+                </span>
+              </h3>
+            </div>
 
-          <div className="documents-review">
-            <h3>Minh chứng đã nộp</h3>
-            <ul>
-              {applicationData.documents.map((file, index) => (
-                <li key={`doc1-${index}`}>{file.name}</li>
-              ))}
-              {applicationData.documents2.map((file, index) => (
-                <li key={`doc2-${index}`}>{file.name}</li>
-              ))}
-              {applicationData.documents3.map((file, index) => (
-                <li key={`doc3-${index}`}>{file.name}</li>
-              ))}
-            </ul>
+            <div className="personal-info-review">
+              <h3>Thông tin cá nhân</h3>
+              <p>
+                <strong>Họ tên:</strong> {applicationData.personalInfo.name}
+              </p>
+              <p>
+                <strong>Giới tính:</strong>{" "}
+                {applicationData.personalInfo.gender}
+              </p>
+              <p>
+                <strong>Ngày sinh:</strong>{" "}
+                {applicationData.personalInfo.dateOfBirth}
+              </p>
+              <p>
+                <strong>Địa chỉ:</strong> {applicationData.personalInfo.address}
+              </p>
+              <p>
+                <strong>Số điện thoại:</strong>{" "}
+                {applicationData.personalInfo.phone}
+              </p>
+            </div>
+
+            <div className="academic-info-review">
+              <h3>Thông tin học vấn</h3>
+              <p>
+                <strong>Trường:</strong> {applicationData.school}
+              </p>
+              <p>
+                <strong>Ngành:</strong> {applicationData.major}
+              </p>
+              <p>
+                <strong>Hình thức:</strong>{" "}
+                {isTranscriptBased(applicationData)
+                  ? "Xét tuyển học bạ"
+                  : "Xét tuyển điểm thi"}
+              </p>
+              {!isTranscriptBased(applicationData) && (
+                <p>
+                  <strong>Tổ hợp:</strong> {applicationData.examCombination}
+                </p>
+              )}
+            </div>
+
+            {isTranscriptBased(applicationData) ? (
+              <div className="academic-info-review">
+                <h3>Điểm học bạ</h3>
+                <div className="semester-section">
+                  <h4>Lớp 12 - Học kỳ 1</h4>
+                  {Object.entries(
+                    applicationData.transcriptScores.semester1Grade12
+                  ).map(([subject, score]) => (
+                    <p key={subject}>
+                      <strong>{subject}:</strong> {score}
+                    </p>
+                  ))}
+                </div>
+                <div className="semester-section">
+                  <h4>Lớp 12 - Học kỳ 2</h4>
+                  {Object.entries(
+                    applicationData.transcriptScores.semester2Grade12
+                  ).map(([subject, score]) => (
+                    <p key={subject}>
+                      <strong>{subject}:</strong> {score}
+                    </p>
+                  ))}
+                </div>
+                <div className="semester-section">
+                  <h4>Lớp 11 - Học kỳ 1</h4>
+                  {Object.entries(
+                    applicationData.transcriptScores.semester1Grade11
+                  ).map(([subject, score]) => (
+                    <p key={subject}>
+                      <strong>{subject}:</strong> {score}
+                    </p>
+                  ))}
+                </div>
+                <div className="semester-section">
+                  <h4>Lớp 11 - Học kỳ 2</h4>
+                  {Object.entries(
+                    applicationData.transcriptScores.semester2Grade11
+                  ).map(([subject, score]) => (
+                    <p key={subject}>
+                      <strong>{subject}:</strong> {score}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="academic-info-review">
+                <h3>Điểm thi</h3>
+                {Object.entries(applicationData.scores).map(
+                  ([subject, score]) => (
+                    <p key={subject}>
+                      <strong>{subject}:</strong> {score}
+                    </p>
+                  )
+                )}
+              </div>
+            )}
+          </>
+        ) : (
+          <div className="no-applications">
+            <p>Không tìm thấy thông tin hồ sơ.</p>
+            <button onClick={() => setPage("apply")} className="action-button">
+              Đăng ký xét tuyển
+            </button>
           </div>
-        </>
-      ) : (
-        <p>Chưa có hồ sơ nào được gửi</p>
-      )}
-    </div>
-  </CommonLayout>
-);
+        )}
+      </div>
+    </CommonLayout>
+  );
+};
 
 export default Results;

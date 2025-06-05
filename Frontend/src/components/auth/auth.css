@@ -1,10 +1,11 @@
 /* auth.css - giao diện login và thông báo */
 
 /* Reset cơ bản */
-html, body {
+html,
+body {
   height: 100%;
   margin: 0;
-  font-family: 'Segoe UI', Tahoma, sans-serif;
+  font-family: "Segoe UI", Tahoma, sans-serif;
   background: linear-gradient(135deg, #e3f2fd 0%, #f1e3e3 100%);
 }
 
@@ -16,15 +17,15 @@ html, body {
   height: 100vh;
   position: relative;
   overflow: hidden;
-  
 }
 
 /* Background sách mở CSS-only */
 .auth-page::before,
 .auth-page::after {
-  content: '';
+  content: "";
   position: absolute;
-  top: 5%; bottom: 5%;
+  top: 5%;
+  bottom: 5%;
   width: 40%;
   background: #8fcafb;
   border-radius: 4px;
@@ -69,27 +70,28 @@ html, body {
   font-weight: 600;
   color: #0033a0;
 }
+.register-container,
+.login-container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 .form-group label {
   display: block;
-  margin-bottom: 8px;
-  font-size: 14px;
-  color: #333;
-  font-weight: 500;
+  margin-bottom: 5px;
+  font-weight: bold;
 }
 .form-group input {
   width: 100%;
-  padding: 12px;
-  font-size: 14px;
+  padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  transition: border-color 0.2s;
-}
-.form-group input:focus {
-  border-color: #0033a0;
-  outline: none;
 }
 .login-button {
   width: 100%;
@@ -105,6 +107,20 @@ html, body {
 }
 .login-button:hover {
   background-color: #002080;
+}
+.register-button,
+.login-button {
+  width: 100%;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.register-button:hover,
+.login-button:hover {
+  background-color: #0056b3;
 }
 .register-link {
   margin-top: 16px;
@@ -125,7 +141,7 @@ html, body {
 .notification {
   flex: 1;
   padding: 32px;
-  background: rgba(255,255,255,0.9);
+  background: rgba(255, 255, 255, 0.9);
   border-radius: 8px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
@@ -145,4 +161,9 @@ html, body {
 /* Đảm bảo notification Ant Design hiện nổi bật */
 .ant-notification {
   z-index: 1000;
+}
+
+.error-message {
+  color: red;
+  font-size: 14px;
 }

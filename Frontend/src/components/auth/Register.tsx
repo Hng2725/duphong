@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import './auth.css';
+import React, { useState } from "react";
+import "./auth.css";
 
 interface RegisterProps {
   setCurrentUser: (user: string) => void;
@@ -7,18 +7,38 @@ interface RegisterProps {
 }
 
 const Register: React.FC<RegisterProps> = ({ setCurrentUser, setPage }) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     if (username && password && password === confirmPassword) {
-      setCurrentUser(username);
-      setPage('dashboard');
+      try {
+        const response = await fetch("http://localhost:5000/api/register", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ username, password }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          alert("Đăng ký thành công!");
+          setCurrentUser(username);
+          setPage("dashboard");
+        } else {
+          alert(data.message || "Đăng ký thất bại");
+        }
+      } catch (error) {
+        console.error("Lỗi khi gửi request:", error);
+        alert("Có lỗi xảy ra, vui lòng thử lại sau.");
+      }
     } else if (password !== confirmPassword) {
-      alert('Mật khẩu xác nhận không khớp');
+      alert("Mật khẩu xác nhận không khớp");
     } else {
-      alert('Vui lòng nhập đầy đủ thông tin');
+      alert("Vui lòng nhập đầy đủ thông tin");
     }
   };
 
@@ -56,8 +76,7 @@ const Register: React.FC<RegisterProps> = ({ setCurrentUser, setPage }) => {
         Đăng ký
       </button>
       <p className="login-link">
-        Đã có tài khoản?{' '}
-        <a onClick={() => setPage('login')}>Đăng nhập ngay</a>
+        Đã có tài khoản? <a onClick={() => setPage("login")}>Đăng nhập ngay</a>
       </p>
     </div>
   );

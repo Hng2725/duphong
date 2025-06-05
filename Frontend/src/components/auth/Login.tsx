@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import "../../styles.css";
+import "./auth.css";
 
 interface LoginProps {
   setCurrentUser: (user: string) => void;
   setPage: (page: string) => void;
-  setIsAdmin?: (isAdmin: boolean) => void;
+  setIsAdmin?: (isAdmin: boolean) => void; // Thêm prop setIsAdmin
 }
 
 const Login: React.FC<LoginProps> = ({
@@ -16,11 +16,8 @@ const Login: React.FC<LoginProps> = ({
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted"); // Debug log
-
-    // Reset error
     setError("");
 
     // Validate input
@@ -29,72 +26,69 @@ const Login: React.FC<LoginProps> = ({
       return;
     }
 
-    // Kiểm tra tài khoản admin
-    if (username === "admin" && password === "123") {
-      console.log("Admin login"); // Debug log
-      setCurrentUser("admin");
-      if (setIsAdmin) setIsAdmin(true);
-      localStorage.setItem("currentUser", "admin");
-      setPage("admin-dashboard");
-      return;
+    try {
+      const response = await fetch("http://localhost:5000/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("Đăng nhập thành công!");
+        setCurrentUser(username);
+
+        // Kiểm tra nếu là admin
+        if (username === "admin" && password === "admin123") {
+          setIsAdmin && setIsAdmin(true); // Đặt trạng thái admin
+          setPage("admin-dashboard"); // Chuyển tới giao diện admin
+        } else {
+          setIsAdmin && setIsAdmin(false); // Đặt trạng thái người dùng
+          setPage("dashboard"); // Chuyển tới giao diện người dùng
+        }
+      } else {
+        setError(data.message || "Đăng nhập thất bại");
+      }
+    } catch (error) {
+      console.error("Lỗi khi gửi request:", error);
+      setError("Có lỗi xảy ra, vui lòng thử lại sau.");
     }
-
-    // Xử lý đăng nhập cho người dùng thông thường
-    console.log("User login"); // Debug log
-    setCurrentUser(username);
-    if (setIsAdmin) setIsAdmin(false);
-    localStorage.setItem("currentUser", username);
-    setPage("dashboard");
-  };
-
-  const handleLoginClick = () => {
-    console.log("Login button clicked"); // Debug log
   };
 
   return (
-    <div className="auth-wrapper">
-      <div className="login-container">
-        <h2>Đăng nhập</h2>
-        <form onSubmit={handleSubmit} noValidate>
-          <div className="form-group">
-            <label htmlFor="username">Tên đăng nhập:</label>
-            <input
-              type="text"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Nhập tên đăng nhập"
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="password">Mật khẩu:</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Nhập mật khẩu"
-            />
-          </div>
-          {error && <div className="error-message">{error}</div>}
-          <button
-            type="submit"
-            className="login-button"
-            onClick={handleLoginClick}
-          >
-            Đăng nhập
-          </button>
-        </form>
-        <div className="register-link">
-          Chưa có tài khoản?{" "}
-          <span
-            onClick={() => setPage("register")}
-            style={{ cursor: "pointer", color: "#3498db" }}
-          >
-            Đăng ký ngay
-          </span>
+    <div className="login-container">
+      <h2>Đăng nhập</h2>
+      <form onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label>Tên tài khoản</label>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Nhập tên tài khoản"
+          />
         </div>
-      </div>
+        <div className="form-group">
+          <label>Mật khẩu</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Nhập mật khẩu"
+          />
+        </div>
+        {error && <p className="error-message">{error}</p>}
+        <button type="submit" className="login-button">
+          Đăng nhập
+        </button>
+      </form>
+      <p className="register-link">
+        Chưa có tài khoản?{" "}
+        <a onClick={() => setPage("register")}>Đăng ký ngay</a>
+      </p>
     </div>
   );
 };

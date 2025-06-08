@@ -76,6 +76,7 @@ const CombinedForm: React.FC<CombinedFormProps> = ({
   });
 
   const [errors, setErrors] = useState<{ cccd?: string; phone?: string }>({});
+  const [totalScore, setTotalScore] = useState<number>(0);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -130,6 +131,22 @@ const CombinedForm: React.FC<CombinedFormProps> = ({
       ...prev,
       scores: { ...prev.scores, [subject]: parseFloat(value) },
     }));
+
+    // Tính tổng điểm
+    const updatedScores = { ...localData.scores, [subject]: parseFloat(value) };
+    let total = Object.values(updatedScores).reduce(
+      (sum, score) => sum + (score || 0),
+      0
+    );
+
+    // Cộng điểm ưu tiên
+    if (localData.priorityCategories[0] === "Ưu tiên 1") {
+      total += 0.2;
+    } else if (localData.priorityCategories[0] === "Ưu tiên 2") {
+      total += 0.5;
+    }
+
+    setTotalScore(total);
   };
 
   const handlePriorityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -137,6 +154,20 @@ const CombinedForm: React.FC<CombinedFormProps> = ({
       ...prev,
       priorityCategories: [e.target.value],
     }));
+
+    // Cập nhật tổng điểm khi thay đổi ưu tiên
+    let total = Object.values(localData.scores).reduce(
+      (sum, score) => sum + (score || 0),
+      0
+    );
+
+    if (e.target.value === "Ưu tiên 1") {
+      total += 0.2;
+    } else if (e.target.value === "Ưu tiên 2") {
+      total += 0.5;
+    }
+
+    setTotalScore(total);
   };
 
   const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
@@ -313,6 +344,13 @@ const CombinedForm: React.FC<CombinedFormProps> = ({
             <option value="Ưu tiên 2">Ưu tiên 2</option>
             <option value="Không ưu tiên">Không ưu tiên</option>
           </select>
+        </div>
+
+        <div className="form-section">
+          <h3>E. Tổng điểm</h3>
+          <p>
+            <strong>Tổng điểm:</strong> {totalScore.toFixed(2)}
+          </p>
         </div>
 
         <button type="submit" className="next-button">

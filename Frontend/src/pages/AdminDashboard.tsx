@@ -523,20 +523,26 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <div className="detail-section">
                 <h4>Thông tin cá nhân</h4>
                 <div className="info-grid">
-                  <p>
-                    <strong>Họ tên:</strong> {application.personalInfo.name}
-                  </p>
-                  <p>
-                    <strong>CCCD:</strong> {application.personalInfo.cccd}
-                  </p>
-                  <p>
-                    <strong>Ngày sinh:</strong>{" "}
-                    {application.personalInfo.dateOfBirth}
-                  </p>
-                  <p>
-                    <strong>Giới tính:</strong>{" "}
-                    {application.personalInfo.gender}
-                  </p>
+                  {application.personalInfo ? (
+                    <>
+                      <p>
+                        <strong>Họ tên:</strong> {application.personalInfo.name}
+                      </p>
+                      <p>
+                        <strong>CCCD:</strong> {application.personalInfo.cccd}
+                      </p>
+                      <p>
+                        <strong>Ngày sinh:</strong>{" "}
+                        {application.personalInfo.dateOfBirth}
+                      </p>
+                      <p>
+                        <strong>Giới tính:</strong>{" "}
+                        {application.personalInfo.gender}
+                      </p>
+                    </>
+                  ) : (
+                    <p>Thông tin cá nhân không khả dụng.</p>
+                  )}
                 </div>
               </div>
 
@@ -572,7 +578,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         </p>
                       ))}
                     </>
-                  ) : (
+                  ) : application.scores ? (
                     Object.entries(application.scores).map(
                       ([subject, score]) => (
                         <p key={subject}>
@@ -580,6 +586,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         </p>
                       )
                     )
+                  ) : (
+                    <p>Không có điểm xét tuyển.</p>
                   )}
                 </div>
               </div>

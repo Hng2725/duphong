@@ -56,28 +56,22 @@ body {
 }
 
 /* Form login */
-.login-container {
-  flex: 1;
-  margin-right: 40px;
-  padding: 32px;
-  background: rgba(254, 254, 255, 0.9);
-  border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-}
 .login-container h2 {
   margin-bottom: 24px;
   font-size: 24px;
   font-weight: 600;
   color: #0033a0;
 }
-.register-container,
-.login-container {
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  background-color: #f9f9f9;
+/* Center Login and Register boxes */
+.login-container,
+.register-container {
+  position: absolute;
+  left: 35%;
+  width: 400px;
+  padding: 32px;
+  background: rgba(254, 254, 255, 0.9);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
 }
 .form-group {
   margin-bottom: 15px;

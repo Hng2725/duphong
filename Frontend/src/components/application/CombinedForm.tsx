@@ -320,16 +320,19 @@ const CombinedForm: React.FC<CombinedFormProps> = ({
           <h3>C. Điểm thi</h3>
           <input
             type="number"
+            step="0.01"
             placeholder="Điểm môn 1"
             onChange={(e) => handleScoreChange("subject1", e.target.value)}
           />
           <input
             type="number"
+            step="0.01"
             placeholder="Điểm môn 2"
             onChange={(e) => handleScoreChange("subject2", e.target.value)}
           />
           <input
             type="number"
+            step="0.01"
             placeholder="Điểm môn 3"
             onChange={(e) => handleScoreChange("subject3", e.target.value)}
           />

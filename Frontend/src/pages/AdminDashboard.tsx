@@ -156,86 +156,42 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     return null;
   };
 
-  const handleSave = () => {
-    const error = validateForm();
-    if (error) {
-      alert(error);
-      return;
-    }
+  const handleSave = async () => {
+    try {
+      if (editTab === "universities" && isUniversityForm(formData)) {
+        const universityData = formData as UniversityFormData;
 
-    if (editTab === "universities" && isUniversityForm(formData)) {
-      const universityData = formData as UniversityFormData;
-      if (editingItem) {
-        setUniversities(
-          universities.map((uni) =>
-            uni.id === editingItem.id
-              ? ({ ...universityData, id: uni.id } as University)
-              : uni
-          )
-        );
-      } else {
-        setUniversities([
-          ...universities,
-          {
-            ...universityData,
-            id: universities.length + 1,
-            majors: universityData.majors || [],
-            examCombinations: universityData.examCombinations || [],
-          } as University,
-        ]);
-      }
-    } else if (editTab === "combinations" && isExamCombinationForm(formData)) {
-      const combinationData = formData as ExamCombinationFormData;
-      const selectedUniversities = (formData as any).selectedUniversities || [];
-      const combinationCode = combinationData.code || "";
-
-      // Cập nhật tổ hợp
-      if (editingItem) {
-        setExamCombinations(
-          examCombinations.map((combo) =>
-            combo.id === editingItem.id
-              ? ({ ...combinationData, id: combo.id } as ExamCombination)
-              : combo
-          )
-        );
-      } else {
-        setExamCombinations([
-          ...examCombinations,
-          {
-            ...combinationData,
-            id: examCombinations.length + 1,
-          } as ExamCombination,
-        ]);
-      }
-
-      // Cập nhật danh sách tổ hợp trong các trường được chọn
-      const updatedUniversities = universities.map((uni) => {
-        const currentCombinations = uni.examCombinations || [];
-
-        if (selectedUniversities.includes(uni.code)) {
-          // Thêm tổ hợp nếu trường được chọn và chưa có tổ hợp này
-          if (!currentCombinations.includes(combinationCode)) {
-            return {
-              ...uni,
-              examCombinations: [...currentCombinations, combinationCode],
-            } as University;
-          }
+        if (editingItem) {
+          setUniversities(
+            universities.map((uni) =>
+              uni.id === editingItem.id
+                ? ({ ...universityData, id: uni.id } as University)
+                : uni
+            )
+          );
         } else {
-          // Loại bỏ tổ hợp nếu trường không được chọn
-          return {
-            ...uni,
-            examCombinations: currentCombinations.filter(
-              (code) => code !== combinationCode
-            ),
-          } as University;
-        }
-        return uni;
-      });
+          // Gọi API để thêm trường mới vào MySQL
+          const response = await fetch("http://localhost:5000/api/schools", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ schoolName: universityData.name }),
+          });
 
-      setUniversities(updatedUniversities);
+          if (!response.ok) {
+            throw new Error("Lỗi khi thêm trường vào cơ sở dữ liệu");
+          }
+
+          const data = await response.json();
+          setUniversities(data.schools); // Cập nhật danh sách trường từ API
+        }
+      }
+
+      setShowModal(false);
+      setFormData({});
+    } catch (err) {
+      console.error(err);
+      alert("Đã xảy ra lỗi khi lưu dữ liệu");
     }
-    setShowModal(false);
-    setFormData({});
   };
 
   const renderModal = () => {
@@ -437,7 +393,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <p>Mã trường: {item.code}</p>
                   <div className="university-actions">
                     <p>
-                      Số ngành: {(item as University).majors.length}
+                      Số ngành: {(item as University).majors ? (item as University).majors.length : 0}
                       <button
                         onClick={() =>
                           setSelectedUniversity(item as University)

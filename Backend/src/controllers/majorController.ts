@@ -18,20 +18,24 @@ export const addMajor = async (req: Request, res: Response): Promise<void> => {
 
   // Kiểm tra dữ liệu đầu vào
   if (!name || !schoolId) {
-    res.status(400).json({ message: "Tên ngành và ID trường không được để trống" });
+    res
+      .status(400)
+      .json({ message: "Tên ngành và ID trường không được để trống" });
     return;
   }
 
   try {
     // Thêm ngành mới vào bảng majors
-    const [result] = await db.query("INSERT INTO majors (name, school_id) VALUES (?, ?)", [
-      name,
-      schoolId,
-    ]);
+    const [result] = await db.query(
+      "INSERT INTO majors (name, school_id) VALUES (?, ?)",
+      [name, schoolId]
+    );
 
     // Kiểm tra nếu thêm thành công
     if ((result as any).affectedRows === 0) {
-      res.status(500).json({ message: "Không thể thêm ngành vào cơ sở dữ liệu" });
+      res
+        .status(500)
+        .json({ message: "Không thể thêm ngành vào cơ sở dữ liệu" });
       return;
     }
 
@@ -50,7 +54,7 @@ export const updateMajor = async (
   res: Response
 ): Promise<void> => {
   const id = Number(req.params.id);
-  const { name } = req.body;
+  const { name, schoolId } = req.body;
 
   if (!name) {
     res.status(400).json({ message: "Tên ngành không được để trống" });
@@ -69,7 +73,10 @@ export const updateMajor = async (
     }
 
     // Truy vấn danh sách ngành sau khi cập nhật
-    const [majors] = await db.query("SELECT * FROM majors");
+    const [majors] = await db.query(
+      "SELECT * FROM majors WHERE school_id = ?",
+      [schoolId]
+    );
     res.json({ message: "Đã cập nhật ngành thành công", majors });
   } catch (err) {
     console.error("Lỗi khi cập nhật ngành:", err);
@@ -83,6 +90,7 @@ export const deleteMajor = async (
   res: Response
 ): Promise<void> => {
   const id = Number(req.params.id);
+  const { schoolId } = req.body;
 
   try {
     const [result] = await db.query("DELETE FROM majors WHERE id = ?", [id]);
@@ -93,7 +101,7 @@ export const deleteMajor = async (
     }
 
     // Truy vấn danh sách ngành sau khi xóa
-    const [majors] = await db.query("SELECT * FROM majors");
+    const [majors] = await db.query("SELECT * FROM majors WHERE school_id = ?", [schoolId]);
     res.json({ message: "Đã xóa ngành thành công", majors });
   } catch (err) {
     console.error("Lỗi khi xóa ngành:", err);

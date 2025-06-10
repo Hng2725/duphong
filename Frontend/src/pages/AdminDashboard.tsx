@@ -86,11 +86,31 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setShowModal(true);
   };
 
-  const handleDelete = (id: number) => {
-    if (editTab === "universities") {
-      setUniversities(universities.filter((uni) => uni.id !== id));
-    } else {
-      setExamCombinations(examCombinations.filter((combo) => combo.id !== id));
+  const handleDelete = async (id: number) => {
+    try {
+      if (editTab === "universities") {
+        // Gọi API để xóa trường
+        const response = await fetch(
+          `http://localhost:5000/api/schools/${id}`,
+          {
+            method: "DELETE",
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Lỗi khi xóa trường khỏi cơ sở dữ liệu");
+        }
+
+        const data = await response.json();
+        setUniversities(data.schools); // Cập nhật danh sách trường từ API
+      } else {
+        setExamCombinations(
+          examCombinations.filter((combo) => combo.id !== id)
+        );
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Đã xảy ra lỗi khi xóa dữ liệu");
     }
   };
 
@@ -162,15 +182,24 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
         const universityData = formData as UniversityFormData;
 
         if (editingItem) {
-          setUniversities(
-            universities.map((uni) =>
-              uni.id === editingItem.id
-                ? ({ ...universityData, id: uni.id } as University)
-                : uni
-            )
+          // Gọi API để sửa trường (PUT)
+          const response = await fetch(
+            `http://localhost:5000/api/schools/${editingItem.id}`,
+            {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ schoolName: universityData.name }),
+            }
           );
+
+          if (!response.ok) {
+            throw new Error("Lỗi khi sửa trường trong cơ sở dữ liệu");
+          }
+
+          const data = await response.json();
+          setUniversities(data.schools); // Cập nhật danh sách trường từ API
         } else {
-          // Gọi API để thêm trường mới vào MySQL
+          // Gọi API để thêm trường mới (POST)
           const response = await fetch("http://localhost:5000/api/schools", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -393,7 +422,10 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <p>Mã trường: {item.code}</p>
                   <div className="university-actions">
                     <p>
-                      Số ngành: {(item as University).majors ? (item as University).majors.length : 0}
+                      Số ngành:{" "}
+                      {(item as University).majors
+                        ? (item as University).majors.length
+                        : 0}
                       <button
                         onClick={() =>
                           setSelectedUniversity(item as University)

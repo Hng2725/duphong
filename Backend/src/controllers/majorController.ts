@@ -1,34 +1,102 @@
 import { Request, Response } from "express";
+import { db } from "../db"; // Import kết nối cơ sở dữ liệu
 
-// Giả lập dữ liệu
-let majors = [{ id: 1, name: "Công nghệ thông tin" }];
-
-// CRUD ngành
-export const getMajors = (req: Request, res: Response): void => {
-  res.json(majors);
+// Lấy danh sách ngành
+export const getMajors = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const [majors] = await db.query("SELECT * FROM majors");
+    res.json(majors);
+  } catch (err) {
+    console.error("Lỗi khi lấy danh sách ngành:", err);
+    res.status(500).json({ message: "Lỗi server", error: err });
+  }
 };
 
-export const addMajor = (req: Request, res: Response): void => {
-  const { name } = req.body;
-  const newMajor = { id: majors.length + 1, name };
-  majors.push(newMajor);
-  res.status(201).json(newMajor);
-};
+// Thêm ngành mới
+export const addMajor = async (req: Request, res: Response): Promise<void> => {
+  const { name, schoolId } = req.body;
 
-export const updateMajor = (req: Request, res: Response): void => {
-  const id = Number(req.params.id);
-  const { name } = req.body;
-  const major = majors.find((m) => m.id === id);
-  if (!major) {
-    res.status(404).json({ message: "Không tìm thấy ngành" });
+  // Kiểm tra dữ liệu đầu vào
+  if (!name || !schoolId) {
+    res.status(400).json({ message: "Tên ngành và ID trường không được để trống" });
     return;
   }
-  major.name = name;
-  res.json(major);
+
+  try {
+    // Thêm ngành mới vào bảng majors
+    const [result] = await db.query("INSERT INTO majors (name, school_id) VALUES (?, ?)", [
+      name,
+      schoolId,
+    ]);
+
+    // Kiểm tra nếu thêm thành công
+    if ((result as any).affectedRows === 0) {
+      res.status(500).json({ message: "Không thể thêm ngành vào cơ sở dữ liệu" });
+      return;
+    }
+
+    // Truy vấn danh sách ngành sau khi thêm
+    const [majors] = await db.query("SELECT * FROM majors");
+    res.status(201).json({ message: "Đã thêm ngành thành công", majors });
+  } catch (err) {
+    console.error("Lỗi khi thêm ngành:", err);
+    res.status(500).json({ message: "Lỗi server", error: err });
+  }
 };
 
-export const deleteMajor = (req: Request, res: Response): void => {
+// Cập nhật ngành
+export const updateMajor = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   const id = Number(req.params.id);
-  majors = majors.filter((m) => m.id !== id);
-  res.json({ message: "Đã xóa ngành" });
+  const { name } = req.body;
+
+  if (!name) {
+    res.status(400).json({ message: "Tên ngành không được để trống" });
+    return;
+  }
+
+  try {
+    const [result] = await db.query("UPDATE majors SET name = ? WHERE id = ?", [
+      name,
+      id,
+    ]);
+
+    if ((result as any).affectedRows === 0) {
+      res.status(404).json({ message: "Không tìm thấy ngành" });
+      return;
+    }
+
+    // Truy vấn danh sách ngành sau khi cập nhật
+    const [majors] = await db.query("SELECT * FROM majors");
+    res.json({ message: "Đã cập nhật ngành thành công", majors });
+  } catch (err) {
+    console.error("Lỗi khi cập nhật ngành:", err);
+    res.status(500).json({ message: "Lỗi server", error: err });
+  }
+};
+
+// Xóa ngành
+export const deleteMajor = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const id = Number(req.params.id);
+
+  try {
+    const [result] = await db.query("DELETE FROM majors WHERE id = ?", [id]);
+
+    if ((result as any).affectedRows === 0) {
+      res.status(404).json({ message: "Không tìm thấy ngành để xóa" });
+      return;
+    }
+
+    // Truy vấn danh sách ngành sau khi xóa
+    const [majors] = await db.query("SELECT * FROM majors");
+    res.json({ message: "Đã xóa ngành thành công", majors });
+  } catch (err) {
+    console.error("Lỗi khi xóa ngành:", err);
+    res.status(500).json({ message: "Lỗi server", error: err });
+  }
 };

@@ -20,10 +20,38 @@ const MajorManagement: React.FC<MajorManagementProps> = ({
     setMajors(university.majors || []);
   }, [university]);
 
-  const handleAddMajor = () => {
-    if (newMajor.trim() && !majors.includes(newMajor.trim())) {
-      setMajors([...majors, newMajor.trim()]);
-      setNewMajor("");
+  const handleAddMajor = async () => {
+    if (!newMajor.trim()) {
+      alert("Tên ngành không được để trống!");
+      return;
+    }
+
+    if (majors.includes(newMajor.trim())) {
+      alert("Ngành này đã tồn tại!");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:5000/api/majors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: newMajor.trim(),
+          schoolId: university.id, // ID trường được lấy từ props
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Lỗi khi thêm ngành vào cơ sở dữ liệu");
+      }
+
+      const data = await response.json();
+      setMajors(data.majors.map((major: any) => major.name)); // Cập nhật danh sách ngành từ API
+      setNewMajor(""); // Reset input
+      alert("Thêm ngành thành công!");
+    } catch (err) {
+      console.error(err);
+      alert("Đã xảy ra lỗi khi thêm ngành");
     }
   };
 

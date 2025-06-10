@@ -9,6 +9,9 @@ export interface University {
 }
 
 export interface ExamCombination {
+  subject1: ReactNode;
+  subject2: ReactNode;
+  subject3: ReactNode;
   id: number;
   code: string;
   subjects: string[];

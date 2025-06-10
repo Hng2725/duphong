@@ -3,7 +3,6 @@ import { saveSchool, deleteSchool, updateSchool} from "../controllers/schoolCont
 
 const router = Router();
 
-// Route lưu tổ hợp
 router.post("/", saveSchool);
 
 router.delete("/:id", deleteSchool);

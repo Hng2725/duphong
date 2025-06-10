@@ -2,6 +2,7 @@ import { Router } from "express";
 import { register, login } from "../controllers/userController";
 import schoolRoutes from "./schoolRoutes";
 import majorRoutes from "./majorRoutes";
+import combinationRoutes from "./combinationRoutes";
 
 const router = Router();
 
@@ -15,5 +16,7 @@ router.post("/login", login);
 router.use("/schools", schoolRoutes);
 
 router.use("/majors", majorRoutes);
+
+router.use("/combinations", combinationRoutes);
 
 export default router;

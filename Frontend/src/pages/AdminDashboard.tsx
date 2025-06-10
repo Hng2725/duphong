@@ -17,7 +17,11 @@ interface AdminDashboardProps {
 }
 
 type UniversityFormData = Partial<Omit<University, "id">>;
-type ExamCombinationFormData = Partial<Omit<ExamCombination, "id">>;
+type ExamCombinationFormData = Partial<Omit<ExamCombination, "id">> & {
+  subject1?: string;
+  subject2?: string;
+  subject3?: string;
+};
 type FormDataType = UniversityFormData | ExamCombinationFormData;
 
 const isUniversityForm = (data: FormDataType): data is UniversityFormData => {
@@ -27,7 +31,12 @@ const isUniversityForm = (data: FormDataType): data is UniversityFormData => {
 const isExamCombinationForm = (
   data: FormDataType
 ): data is ExamCombinationFormData => {
-  return "subjects" in data || "description" in data;
+  return (
+    "subject1" in data ||
+    "subject2" in data ||
+    "subject3" in data ||
+    "description" in data
+  );
 };
 
 const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -120,18 +129,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
     >
   ) => {
     const { name, value } = e.target;
-    if (name.startsWith("subject")) {
-      const subjectIndex = parseInt(name.replace("subject", "")) - 1;
-      setFormData((prev) => {
-        const currentForm = prev as ExamCombinationFormData;
-        const subjects = [...(currentForm.subjects || ["", "", ""])];
-        subjects[subjectIndex] = value;
-        return {
-          ...prev,
-          subjects,
-        };
-      });
-    } else if (name === "selectedUniversities") {
+
+    if (name === "selectedUniversities") {
       // Xử lý khi chọn trường từ dropdown
       const selectedOptions = Array.from(
         (e.target as HTMLSelectElement).selectedOptions
@@ -141,6 +140,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
         selectedUniversities: selectedOptions,
       }));
     } else {
+      // Cập nhật trực tiếp các trường subject1, subject2, subject3 hoặc các trường khác
       setFormData((prev) => ({
         ...prev,
         [name]: value,
@@ -212,6 +212,47 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
           const data = await response.json();
           setUniversities(data.schools); // Cập nhật danh sách trường từ API
+        }
+      } else if (
+        editTab === "combinations" &&
+        isExamCombinationForm(formData)
+      ) {
+        const examCombinationData = formData as ExamCombinationFormData;
+
+        if (editingItem) {
+          // Gọi API để sửa tổ hợp (PUT)
+          const response = await fetch(
+            `http://localhost:5000/api/combinations/${editingItem.id}`,
+            {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(examCombinationData),
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error("Lỗi khi sửa tổ hợp trong cơ sở dữ liệu");
+          }
+
+          const data = await response.json();
+          setExamCombinations(data.combinations); // Cập nhật danh sách tổ hợp từ API
+        } else {
+          // Gọi API để thêm tổ hợp mới (POST)
+          const response = await fetch(
+            "http://localhost:5000/api/combinations",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(examCombinationData),
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error("Lỗi khi thêm tổ hợp vào cơ sở dữ liệu");
+          }
+
+          const data = await response.json();
+          setExamCombinations(data.combinations); // Cập nhật danh sách tổ hợp từ API
         }
       }
 
@@ -294,7 +335,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         type="text"
                         name="subject1"
                         placeholder="Nhập môn thi thứ nhất"
-                        value={subjects[0]}
+                        value={
+                          (formData as ExamCombinationFormData).subject1 || ""
+                        }
                         onChange={handleInputChange}
                       />
                     </div>
@@ -304,7 +347,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         type="text"
                         name="subject2"
                         placeholder="Nhập môn thi thứ hai"
-                        value={subjects[1]}
+                        value={
+                          (formData as ExamCombinationFormData).subject2 || ""
+                        }
                         onChange={handleInputChange}
                       />
                     </div>
@@ -314,7 +359,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         type="text"
                         name="subject3"
                         placeholder="Nhập môn thi thứ ba"
-                        value={subjects[2]}
+                        value={
+                          (formData as ExamCombinationFormData).subject3 || ""
+                        }
                         onChange={handleInputChange}
                       />
                     </div>
@@ -443,13 +490,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   <div className="combo-details">
                     <p className="subjects">
                       <strong>Môn thi:</strong>{" "}
-                      {(item as ExamCombination).subjects.map(
-                        (subject, idx) => (
-                          <span key={idx} className="subject-tag">
-                            {subject}
-                          </span>
-                        )
-                      )}
+                      <span className="subject-tag">
+                        {(item as ExamCombination).subject1}
+                      </span>
+                      <span className="subject-tag">
+                        {(item as ExamCombination).subject2}
+                      </span>
+                      <span className="subject-tag">
+                        {(item as ExamCombination).subject3}
+                      </span>
                     </p>
                     <p className="description">
                       <strong>Mô tả:</strong>{" "}

@@ -309,7 +309,11 @@ const CombinedForm: React.FC<CombinedFormProps> = ({
             <option value="">Chọn tổ hợp</option>
             {examCombinations.map((combo) => (
               <option key={combo.id} value={combo.code}>
-                {combo.code} - {combo.description} ({combo.subjects.join(", ")})
+                {combo.code} - {combo.description} (
+                {Array.isArray(combo.subjects)
+                  ? combo.subjects.join(", ")
+                  : "Không có môn thi"}
+                )
               </option>
             ))}
           </select>

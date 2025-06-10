@@ -135,11 +135,8 @@ const ApplicationForm: React.FC<ApplicationFormProps> = ({
 
       console.log("Prepared form data for submission:", updatedFormData);
 
-      // Update both local and parent state
       setFormDataState(updatedFormData);
       setFormData(updatedFormData);
-
-      // Call nextStep to trigger the parent's submission logic
       nextStep();
 
       console.log("Form submitted successfully");
